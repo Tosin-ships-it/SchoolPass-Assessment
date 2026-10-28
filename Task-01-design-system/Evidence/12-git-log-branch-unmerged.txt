@@ -1,0 +1,45 @@
+================================================================================
+TASK 1 - STEP 8: THE DELIBERATE REGRESSION (TOKEN REFERENCING ARGUMENT)
+================================================================================
+
+Why This Is the Whole Argument for Token Referencing:
+
+When colour roles reference palette primitives through variables, updating the brand color at the source automatically propagates across the entire design system and maintains global visual coherence. When a role or component hardcodes a raw hex value instead of referencing the palette, it silently decouples from the system and remains frozen when the palette updates. This deliberate regression demonstrates how broken token referencing creates immediate visual fragmentation, proving that tokens must strictly reference primitives to ensure the interface can be rebranded or updated from a single source of truth.
+
+================================================================================
+GENUINE GIT LOG & BRANCH DELETION EVIDENCE (UNMERGED REGRESSION BRANCH)
+================================================================================
+
+1. Force Branch Deletion (Proving Branch Contained Unmerged Changes):
+$ git branch -D test/broken-token-referencing
+Deleted branch test/broken-token-referencing (was df84c12).
+
+2. Unmerged Commit Containment Check (Empty Result Proves df84c12 Is Not in Any Branch):
+$ git branch --contains df84c12
+(no branches contain commit df84c12)
+
+3. Active Local Branches (Confirming Absence of Regression Branch):
+$ git branch -v
+* feat/student-number-linking 8fea9fb feat: upgrade password hashing to Argon2id with backward compatibility and transparent migration
+  master                      8fea9fb feat: upgrade password hashing to Argon2id with backward compatibility and transparent migration
+
+4. Git Reflog History (Documenting Branch Lifecycle: Creation, Regression Commit, Switch, and Deletion):
+$ git reflog -n 8
+8fea9fb HEAD@{0}: checkout: moving from test/broken-token-referencing to feat/student-number-linking
+df84c12 HEAD@{1}: commit: test: deliberate regression breaking token referencing and changing brand color at source
+8fea9fb HEAD@{2}: checkout: moving from feat/student-number-linking to test/broken-token-referencing
+8fea9fb HEAD@{3}: checkout: moving from master to feat/student-number-linking
+8fea9fb HEAD@{4}: merge feat/student-number-linking: Fast-forward
+8fc0616 HEAD@{5}: checkout: moving from feat/student-number-linking to master
+8fea9fb HEAD@{6}: commit: feat: upgrade password hashing to Argon2id with backward compatibility and transparent migration
+3050aed HEAD@{7}: commit: feat: enforce staff RBAC guards and session security
+
+5. Active Mainline Git Graph (Proving Unpolluted Commit History on Target Branch):
+$ git log --graph --oneline -n 6
+* 8fea9fb feat: upgrade password hashing to Argon2id with backward compatibility and transparent migration
+* 3050aed feat: enforce staff RBAC guards and session security
+* 2b77805 feat: implement front-desk student intake, numbering, and permission controls
+* f9bd2db feat: fix sign-out redirects, multi-transport emails, and navigation cleanups
+* b6028f1 feat: implement student linking state, Zod validation, and auth security controls
+* 4315b19 feat: implement SchoolPass welcome emails
+================================================================================

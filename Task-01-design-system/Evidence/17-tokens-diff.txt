@@ -1,0 +1,26 @@
+# Task 1: Token Export Omission & One-Line Diff
+# Specification: Ship-and-Found-Five-Tasks.md (Task 1, Step 5)
+
+## 1. The One-Line Diff Statement (What was missing and how noticed)
+The initial export omitted the entire color system ("primitives" and "color roles" collections, totaling 2,287 JSON lines and 151 color tokens) because the "Include Figma variables" setting was unchecked in the export plugin; noticed when running `convert-tokens.js` generated a `tokens.css` file with completely empty primitive and semantic color sections.
+
+## 2. Diff Summary
+- Incomplete export: `Evidence/05-tokens-incomplete.json` (750 lines: "effect" and "typography" styles only)
+- Complete export: `Evidence/06-tokens-complete.json` (3,037 lines: "effect", "primitives", "color roles", and "typography")
+- Total lines added: +2,287 lines (inserted between line 57 `"effect"` and line 2345 `"typography"`)
+
+## 3. Structural Diff Boundary
+```diff
+--- a/Evidence/05-tokens-incomplete.json
++++ b/Evidence/06-tokens-complete.json
+@@ -56,4 +56,2291 @@
+     }
+   },
++  "primitives": {
++    ... [1,595 lines defining color palettes and key colors via Figma Variables] ...
++  },
++  "color roles": {
++    ... [692 lines defining semantic color roles via Figma Variables] ...
++  },
+   "typography": {
+```

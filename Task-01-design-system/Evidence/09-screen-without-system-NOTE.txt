@@ -1,0 +1,17 @@
+# Task 1 Evidence: Status of 09-screen-without-system.png
+# Specification: Ship-and-Found-Five-Tasks.md (Task 1, Step 7)
+
+STATUS: UNAVAILABLE (AUTHENTIC SCREENSHOT NOT RECOVERABLE)
+
+This note documents that the required authentic before-state screenshot (`Evidence/09-screen-without-system.png`) could not be recovered.
+
+Investigation Findings:
+1. An inspection of the SchoolPass source repository git history (`git log`) established that the initial repository commit (`cebb045 chore: initial SchoolPass project setup`) already contained the design tokens (`tokens.css`, `design-tokens.tokens.json`) and the landing page implementation (`src/app/page.tsx`) referencing those design tokens.
+2. No prior git revision, alternate branch, or archived historical screenshot exists where the landing page was built prior to receiving the design system.
+3. In accordance with assessment instructions prohibiting the fabrication of evidence or modifying source files to produce artificial breakdowns, a synthetic before-state screenshot was not generated.
+
+Existing Deliverable:
+- `Evidence/10-screen-with-system.png` is available and was captured from the live SchoolPass application running on `http://localhost:3000/` at 1280 × 800 viewport, demonstrating the landing page fully integrated with design tokens.
+
+Note on Assessment Compliance:
+This note explains why the authentic before-state artifact cannot be extracted from repository history. It does not replace the required screenshot, which remains an unavailable evidence item for Task 1, Step 7.

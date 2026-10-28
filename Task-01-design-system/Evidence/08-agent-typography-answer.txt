@@ -1,0 +1,37 @@
+TYPOGRAPHY STYLE VERIFICATION — AGENT RESPONSE
+
+Chosen Element: Hero Subtitle Paragraph
+
+Location: `src/app/page.tsx:953–966`
+
+Text Content:
+"SchoolPass gives registered parents and guardians one direct place to ask school questions, view verified student attendance and fee balances, confirm morning arrival, and reach the school office."
+
+Exact Typography Style Applied: Body Large
+
+How the Style Was Verified:
+
+1. Inspection of the element in `src/app/page.tsx:954–958` showed that its inline styles reference the following CSS custom properties:
+
+```tsx
+fontFamily: 'var(--typography-body-large-fontfamily)',
+fontSize: 'var(--typography-body-large-fontsize)',
+fontWeight: 'var(--typography-body-large-fontweight)',
+lineHeight: 'var(--typography-body-large-lineheight)',
+```
+
+2. Cross-referencing `tokens.css:262–272` confirmed the reported values:
+
+- Font family: `DM Sans`
+- Font size: `16px`
+- Font weight: `500`
+- Line height: `24px`
+- Letter-spacing token: `-0.136px`
+
+The line height is 1.5 times the font size.
+
+Implementation Observation:
+
+The element references the Body Large tokens for font family, font size, font weight, and line height. However, `--typography-body-large-letterspacing` was omitted from the inspected inline style declaration, so that declaration does not explicitly apply the letter-spacing token.
+
+Evidence source: Antigravity agent response supplied during the assessment workflow.
