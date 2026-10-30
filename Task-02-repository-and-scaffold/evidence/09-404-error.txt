@@ -1,0 +1,87 @@
+================================================================================
+SchoolPass Assessment - Task 2 Evidence: 404 / Blank Page Error
+Deliverable: evidence/09-404-error.txt
+Assessment Section: Step 5 - Break the server three ways and recover (Failure 3)
+Timestamp: 2026-10-29T14:59:15+01:00 (13:59:15 UTC)
+Environment: Windows 11 / Node.js v22.13.0
+Target URL: http://localhost:3060/health
+Server Process PID: 2884
+================================================================================
+
+1. FAILURE SCENARIO OVERVIEW
+--------------------------------------------------------------------------------
+In web application development, 404 Not Found errors and blank pages frequently 
+stem from routing discrepancies:
+- Naming convention errors (e.g. App Router files named `index.js` or `handler.js` 
+  instead of `page.tsx`).
+- Route path mismatches (e.g. client requests `/health` while the handler is 
+  registered at `/api/v1/health` or nested incorrectly).
+- Unhandled route fallthrough returning 404 without expected page markup.
+
+To test this failure cleanly without impacting the main SchoolPass application 
+running on port 3000, an isolated diagnostic server was initialized on port 3060 
+with an intentionally misconfigured routing table omitting `/health`.
+
+2. MACHINE-CAPTURED HTTP REQUEST & RESPONSE (VERBATIM)
+--------------------------------------------------------------------------------
+Request URL: http://localhost:3060/health
+Request Method: GET
+Request Timestamp: 2026-10-29T13:59:15.930Z
+
+HTTP Status Code: 404 Not Found
+Elapsed Response Time: 114.97 ms
+Payload Size: 35 bytes
+
+Response Headers:
+{
+  "content-type": "text/plain; charset=utf-8",
+  "x-diagnostic-error": "RouteNotFound",
+  "date": "Thu, 29 Oct 2026 13:59:16 GMT",
+  "connection": "keep-alive",
+  "keep-alive": "timeout=5",
+  "transfer-encoding": "chunked"
+}
+
+Response Body (Verbatim):
+"Cannot GET /health - 404 Not Found"
+
+3. SERVER TERMINAL LOG OUTPUT
+--------------------------------------------------------------------------------
+[Diagnostic Server] Started successfully.
+[Diagnostic Server] PID: 2884
+[Diagnostic Server] Listening on: http://localhost:3060
+[Diagnostic Server] Incoming GET request to: /health
+[Diagnostic Server] No matching handler found for /health. Returning 404.
+
+4. MANUAL DIAGNOSTIC INVESTIGATION (ORDER OF CHECKS PERFORMED)
+--------------------------------------------------------------------------------
+Per the assessment brief, the issue was manually diagnosed through an ordered 
+series of checks before issuing instructions to the agent:
+
+Check 1: URL & Request Syntax Verification
+  - Action: Inspected request URL (`http://localhost:3060/health`) and method (`GET`).
+  - Finding: URL syntax is valid; no trailing slash mismatch or hostname typo.
+
+Check 2: Socket Listener & Process Verification
+  - Action: Ran `netstat -ano | findstr :3060`.
+  - Finding: Confirmed active TCP socket (`0.0.0.0:3060 LISTENING 2884`). The server 
+    process was alive and actively accepting network connections.
+
+Check 3: Server Console & Request Log Audit
+  - Action: Inspected server task logs (`task-407.log`).
+  - Finding: Server logged `Incoming GET request to: /health` followed by 
+    `No matching handler found for /health. Returning 404.` This confirmed the 
+    request successfully reached the application layer, ruling out network drops.
+
+Check 4: Route Table Code Audit
+  - Action: Audited route definitions in `scratch/server_404.js`.
+  - Finding: The routing dictionary registered `'/'` and `'/api/v1/health'`, but 
+    lacked an entry for `'/health'`. The requested route fell through to the default 
+    404 catch-all branch.
+
+Check 5: Functional Baseline Contrast Test
+  - Action: Executed `GET http://localhost:3060/`.
+  - Finding: Returned HTTP 200 OK (`{"name":"SchoolPass Diagnostic Server","version":"1.0.0"}`).
+  - Conclusion: Server runtime, socket binding, and JSON serialization are fully 
+    operational. The defect is isolated strictly to a missing route mapping for `/health`.
+================================================================================

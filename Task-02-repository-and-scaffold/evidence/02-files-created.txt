@@ -1,0 +1,124 @@
+================================================================================
+INITIAL SCAFFOLD COMMIT: FILES CREATED
+================================================================================
+
+Commit Hash: cebb045c2b25abfad224cf017176ecbbc5cf1caa
+Commit Message: chore: initial SchoolPass project setup
+Author: tosin <[email redacted for privacy]>
+AuthorDate: Thu Oct 8 21:59:11 2026 +0100
+Commit: tosin <[email redacted for privacy]>
+CommitDate: Thu Oct 8 21:59:11 2026 +0100
+
+Privacy note: The author email is omitted from this assessment copy. The original Git commit metadata remains unchanged.
+
+Summary: 101 files added, 0 modified, 0 deleted (13206 insertions(+), 0 deletions(-))
+
+Note: This list represents the verified contents of the initial root commit (cebb045)
+only, retrieved via `git show --format=fuller --name-status --no-renames cebb045`.
+It does not represent later commits or the current working tree.
+
+--------------------------------------------------------------------------------
+VERIFIED FILE LIST (101 FILES ADDED)
+--------------------------------------------------------------------------------
+A	.agent/rules/Ai.md
+A	.agent/rules/Arrival.md
+A	.agent/rules/Attendance.md
+A	.agent/rules/Auth.md
+A	.agent/rules/Commands.md
+A	.agent/rules/Config.md
+A	.agent/rules/DataModel.md
+A	.agent/rules/Env.md
+A	.agent/rules/ErrorStates.md
+A	.agent/rules/FolderMap.md
+A	.agent/rules/Logging.md
+A	.agent/rules/Payments.md
+A	.agent/rules/Privacy.md
+A	.agent/rules/Retention.md
+A	.agent/rules/StaffUI.md
+A	.agent/skills/add-approved-info-entry/SKILL.md
+A	.agent/skills/confirm-arrival/SKILL.md
+A	.agent/skills/handle-payment-webhook/SKILL.md
+A	.agent/skills/plan-staff-screen/SKILL.md
+A	.agent/skills/record-staff-attendance/SKILL.md
+A	.env.example
+A	.gitignore
+A	AGENTS.md
+A	JOURNAL.md
+A	README.md
+A	convert-tokens.js
+A	design-tokens.tokens.json
+A	docs/PRD_ADDENDUM_v6.1.md
+A	docs/SchoolPass_PRD_v6.md
+A	next.config.js
+A	package.json
+A	prisma/schema.prisma
+A	src/app/(parent)/arrival/.gitkeep
+A	src/app/(parent)/ask/.gitkeep
+A	src/app/(parent)/ask/page.tsx
+A	src/app/(parent)/layout.tsx
+A	src/app/(parent)/office/.gitkeep
+A	src/app/(parent)/pay/.gitkeep
+A	src/app/(parent)/records/.gitkeep
+A	src/app/(staff)/arrival-code/.gitkeep
+A	src/app/(staff)/attendance/.gitkeep
+A	src/app/(staff)/attendance/page.tsx
+A	src/app/(staff)/guardian-links/.gitkeep
+A	src/app/(staff)/info/.gitkeep
+A	src/app/(staff)/layout.tsx
+A	src/app/(staff)/payments/.gitkeep
+A	src/app/(staff)/reports/.gitkeep
+A	src/app/(staff)/settings/.gitkeep
+A	src/app/(staff)/staff-accounts/.gitkeep
+A	src/app/api/arrival/.gitkeep
+A	src/app/api/ask/.gitkeep
+A	src/app/api/auth/forgot-password/route.ts
+A	src/app/api/auth/login/route.ts
+A	src/app/api/auth/logout/route.ts
+A	src/app/api/auth/register/route.ts
+A	src/app/api/auth/resend-verification/route.ts
+A	src/app/api/auth/reset-password/route.ts
+A	src/app/api/auth/session/route.ts
+A	src/app/api/auth/staff-login/route.ts
+A	src/app/api/auth/verify-email/route.ts
+A	src/app/api/payments/.gitkeep
+A	src/app/api/records/.gitkeep
+A	src/app/api/reports/.gitkeep
+A	src/app/auth/.gitkeep
+A	src/app/auth/components/AuthCard.tsx
+A	src/app/auth/components/AuthFormElements.tsx
+A	src/app/auth/forgot-password/ForgotPasswordForm.tsx
+A	src/app/auth/forgot-password/page.tsx
+A	src/app/auth/layout.tsx
+A	src/app/auth/login/ParentLoginForm.tsx
+A	src/app/auth/login/page.tsx
+A	src/app/auth/register/ParentRegisterForm.tsx
+A	src/app/auth/register/page.tsx
+A	src/app/auth/reset-password/ResetPasswordForm.tsx
+A	src/app/auth/reset-password/page.tsx
+A	src/app/auth/staff-login/StaffLoginForm.tsx
+A	src/app/auth/staff-login/page.tsx
+A	src/app/auth/verify-email/VerifyEmailForm.tsx
+A	src/app/auth/verify-email/page.tsx
+A	src/app/error.tsx
+A	src/app/globals.css
+A	src/app/icon.svg
+A	src/app/layout.tsx
+A	src/app/loading.tsx
+A	src/app/page.tsx
+A	src/app/privacy/page.tsx
+A	src/app/terms/page.tsx
+A	src/lib/ai/api/.gitkeep
+A	src/lib/arrival/api/.gitkeep
+A	src/lib/attendance/.gitkeep
+A	src/lib/auth/crypto.ts
+A	src/lib/auth/index.ts
+A	src/lib/auth/store.ts
+A	src/lib/db/index.ts
+A	src/lib/errors/strings.ts
+A	src/lib/logging/index.ts
+A	src/lib/payments/api/.gitkeep
+A	src/lib/retention/.gitkeep
+A	src/middleware.ts
+A	tokens.css
+A	tsconfig.json
+================================================================================

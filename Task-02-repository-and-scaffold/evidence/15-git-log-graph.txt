@@ -1,0 +1,108 @@
+================================================================================
+GIT COMMIT LOG & GRAPH EVIDENCE (git log --graph --all --decorate --date=iso)
+================================================================================
+
+Repository Path: C:\Users\gbola\Desktop\SchoolPass
+Remote Origin: https://github.com/Tosin-ships-it/SchoolPass.git
+Command: git log --graph --all --decorate --date=iso
+Captured At: 2026-10-30T09:11:33+01:00
+
+Active Branches & References:
+- Current Working Branch: feat/student-number-linking
+- Local Branches: feat/student-number-linking, master
+- Remote Branches: origin/master, origin/feat/student-number-linking, origin/HEAD
+
+--------------------------------------------------------------------------------
+VERBATIM COMMAND OUTPUT:
+--------------------------------------------------------------------------------
+* commit 8fea9fbb7c8a2fa19bcf0b97b7d86813473eeb26 (HEAD -> feat/student-number-linking, origin/master, origin/feat/student-number-linking, origin/HEAD, master)
+| Author: tosin <liasutosin@gmail.com>
+| Date:   2026-10-23 18:10:09 +0100
+| 
+|     feat: upgrade password hashing to Argon2id with backward compatibility and transparent migration
+| 
+* commit 3050aedff744b6e5e56a20b1bd71c43c1e574f04
+| Author: tosin <liasutosin@gmail.com>
+| Date:   2026-10-22 21:06:12 +0100
+| 
+|     feat: enforce staff RBAC guards and session security
+| 
+* commit 2b77805438e8d8a51ba4d5e7e77927e3699aafec
+| Author: tosin <liasutosin@gmail.com>
+| Date:   2026-10-22 15:28:44 +0100
+| 
+|     feat: implement front-desk student intake, numbering, and permission controls
+|     
+|     - Add baseline migration 0_init and 20261022_add_intending_students for Prisma Migrate
+|     - Implement IntendingStudent and StudentNumberSequence schema and atomic SP-YYYY-NNNN generator
+|     - Add staff-facing /students interface with intake registration, slip modal, and directory search
+|     - Add server-enforced isFrontDesk permission gate and admin-only staff permission toggle tab
+|     - Conditionally render Student Intake dashboard navigation card for authorized staff only
+|     - Fix extractClientIp() header unwrapping in rateLimit for Guardian Links approval
+|     - Add navigation link to return to dashboard on parent records page
+|     - Add 24 comprehensive unit and isolation tests for student intake and numbering
+| 
+* commit f9bd2db66437e47f3d4fa6575562697de6c00979
+| Author: tosin <liasutosin@gmail.com>
+| Date:   2026-10-21 17:54:23 +0100
+| 
+|     feat: fix sign-out redirects, multi-transport emails, and navigation cleanups
+|     
+|     - Resolve raw JSON display on logout by returning HTTP 303 redirects on browser form submissions while preserving JSON API responses
+|     - Route authenticated sign-outs to role-appropriate destinations (/auth/staff-login for staff/admin, /auth/login for parents) based on verified session records
+|     - Clean up duplicate navigation links on the Guardian Links staff page
+|     - Add explicit name and autocomplete attributes to login forms
+|     - Add dual-transport email support (Resend API and Gmail SMTP for local testing) with comprehensive error masking and fallback safeguards
+|     - Add regression test suites for logout navigation, email transports, and form field semantics
+| 
+* commit b6028f137e7fa3300a5002f3db5e1c49bcd4ef80
+| Author: tosin <liasutosin@gmail.com>
+| Date:   2026-10-19 13:08:59 +0100
+| 
+|     feat: implement student linking state, Zod validation, and auth security controls
+|     
+|     - Enhance records and dashboard UI to display pending student-link requests and prevent duplicates
+|     - Integrate shared Zod request validation across all auth and student-link routes and server actions
+|     - Implement in-memory IP rate limiting with 15-minute sliding window and lockout across sensitive operations
+|     - Add anti-spoofing client IP extraction prioritizing platform headers and reverse-proxy chains
+|     - Integrate Have I Been Pwned (HIBP) k-anonymity breached-password check with fail-open timeout resilience
+|     - Implement safe two-stage password migration for legacy account whitespace compatibility
+|     - Add comprehensive test suites covering validation, rate limiting, HIBP, and security improvements
+| 
+* commit 4315b19cfb513d0ddc9ebaf35ca92afd7112d915
+| Author: tosin <liasutosin@gmail.com>
+| Date:   2026-10-18 14:33:33 +0100
+| 
+|     feat: implement SchoolPass welcome emails
+| 
+* commit b4a4feddb1a7ca0a415af5a44903bfab0bd0cf76
+| Author: tosin <liasutosin@gmail.com>
+| Date:   2026-10-18 14:27:08 +0100
+| 
+|     feat: implement student number linking and form accessibility
+| 
+* commit 8fc0616fffdc236342ec47f5c9f8810310fa9923
+| Author: tosin <liasutosin@gmail.com>
+| Date:   2026-10-12 21:49:46 +0100
+| 
+|     feat: implement persistent authentication
+| 
+* commit cebb045c2b25abfad224cf017176ecbbc5cf1caa
+  Author: tosin <liasutosin@gmail.com>
+  Date:   2026-10-08 21:59:11 +0100
+  
+      chore: initial SchoolPass project setup
+
+--------------------------------------------------------------------------------
+COMPACT ONELINE GRAPH VIEW:
+--------------------------------------------------------------------------------
+* 8fea9fb 2026-10-23  (HEAD -> feat/student-number-linking, origin/master, origin/feat/student-number-linking, origin/HEAD, master) feat: upgrade password hashing to Argon2id with backward compatibility and transparent migration
+* 3050aed 2026-10-22  feat: enforce staff RBAC guards and session security
+* 2b77805 2026-10-22  feat: implement front-desk student intake, numbering, and permission controls
+* f9bd2db 2026-10-21  feat: fix sign-out redirects, multi-transport emails, and navigation cleanups
+* b6028f1 2026-10-19  feat: implement student linking state, Zod validation, and auth security controls
+* 4315b19 2026-10-18  feat: implement SchoolPass welcome emails
+* b4a4fed 2026-10-18  feat: implement student number linking and form accessibility
+* 8fc0616 2026-10-12  feat: implement persistent authentication
+* cebb045 2026-10-08  chore: initial SchoolPass project setup
+================================================================================

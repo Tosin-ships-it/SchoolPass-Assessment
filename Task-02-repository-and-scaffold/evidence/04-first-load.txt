@@ -1,0 +1,65 @@
+================================================================================
+FIRST HTTP REQUEST & INITIAL LOAD RECORD
+================================================================================
+
+Test URL: http://localhost:3000
+Timestamp: 2026-10-29 13:43:46+01:00 (2026-10-29T12:43:46Z)
+Status: HTTP 200 OK
+
+--------------------------------------------------------------------------------
+1. HTTP RESPONSE MEASUREMENTS
+--------------------------------------------------------------------------------
+- HTTP Status: 200 OK
+- Total Response Time: 8496 ms
+- Time to First Byte (TTFB): 7591 ms (explicitly measured from request dispatch 
+  to response callback trigger, capturing Next.js on-demand route compilation)
+- Content-Type: text/html; charset=utf-8
+- Payload Size: 87897 bytes
+
+Reported Response Headers:
+- vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding
+- cache-control: no-store, must-revalidate
+- x-powered-by: Next.js
+- content-type: text/html; charset=utf-8
+- date: Thu, 29 Oct 2026 12:43:46 GMT
+- connection: keep-alive
+- keep-alive: timeout=5
+- transfer-encoding: chunked
+
+Measurement Scope Clarification:
+The total response time of 8496 ms reflects network transmission and Next.js server-side 
+execution/on-demand compilation. This HTTP measurement does not measure client-side 
+browser rendering, script evaluation, layout calculation, or visual paint time.
+
+--------------------------------------------------------------------------------
+2. BROWSER VISUAL INSPECTION LIMITATION
+--------------------------------------------------------------------------------
+- Status: Unavailable
+- Underlying Cause: The automated browser subagent could not initialize due to a 
+  Playwright driver download error:
+  "failed to install playwright: could not install driver: error: got non 200 
+  status code: 404 (404 Not Found) from https://playwright.azureedge.net/builds/driver/playwright-1.57.0-win32_x64.zip"
+- Reporting Note: Visual browser inspection was not performed. No visual render or 
+  browser screenshot is claimed.
+
+--------------------------------------------------------------------------------
+3. HTML PAYLOAD CONTENT (EXTRACTED FROM RETURNED MARKUP)
+--------------------------------------------------------------------------------
+Note: The elements below were extracted directly from the returned HTTP response 
+body markup, not from a visually confirmed browser inspection.
+
+- Page Title (<title>):
+  "SchoolPass"
+
+- Primary Heading (<h1>):
+  "The school's answers. Your child's records. One place."
+
+- Section Headings (<h2>):
+  1. "What SchoolPass Provides"
+  2. "How Parent Access Works"
+
+- Static Resources Referenced in Markup:
+  - Stylesheet: /_next/static/css/app/layout.css
+  - Script: /_next/static/chunks/webpack.js
+  - Script: /_next/static/chunks/main-app.js
+================================================================================

@@ -1,0 +1,91 @@
+================================================================================
+SchoolPass Assessment - Task 2 Evidence: Port Conflict Resolved
+Deliverable: evidence/08-port-conflict-resolved.txt
+Assessment Section: Step 5 - Break the server three ways and recover (Recovery 2)
+Timestamp: 2026-10-29T14:51:14+01:00 (13:51:14 UTC)
+Environment: Windows 11 / PowerShell / Node.js v22.13.0
+Target Port: 3050
+================================================================================
+
+1. COMMAND USED TO IDENTIFY CONFLICTING PROCESS
+--------------------------------------------------------------------------------
+Command:
+  netstat -ano | findstr :3050
+
+Machine-Captured Output:
+  TCP    0.0.0.0:3050           0.0.0.0:0              LISTENING       9484
+
+Identified Process ID (PID): 9484
+
+2. PRE-TERMINATION PROCESS IDENTIFICATION & COMMAND LINE AUDIT
+--------------------------------------------------------------------------------
+Before termination, the process identity was verified to ensure only the disposable 
+test server was targeted:
+
+Command:
+  tasklist /FI "PID eq 9484" /FO LIST
+
+Machine-Captured Output:
+  Image Name:   node.exe
+  PID:          9484
+  Session Name: Console
+  Session#:     1
+  Mem Usage:    55,252 K
+
+Command:
+  powershell -Command "(Get-CimInstance Win32_Process -Filter 'ProcessId = 9484').CommandLine"
+
+Machine-Captured Output:
+  "C:\Program Files\nodejs\node.exe" C:\Users\gbola\.gemini\antigravity-ide\brain\f0cd2349-c592-4808-9e5b-5d1cd529f219\scratch\disposable_server.js
+
+Verification Result: The process holding port 3050 was confirmed to be exclusively 
+the disposable test server script (`disposable_server.js`), safely isolated from 
+the main SchoolPass application.
+
+3. PROCESS TERMINATION COMMAND
+--------------------------------------------------------------------------------
+Command:
+  taskkill /F /PID 9484
+
+Machine-Captured Output:
+  SUCCESS: The process with PID 9484 has been terminated.
+
+4. PORT RELEASE VERIFICATION
+--------------------------------------------------------------------------------
+Command:
+  netstat -ano | findstr :3050
+
+Machine-Captured Output:
+  (No matches returned - output empty)
+
+Verification Result: Port 3050 socket was immediately freed and returned to 
+the available OS pool.
+
+5. CLEAN SERVER STARTUP ON RELEASED PORT
+--------------------------------------------------------------------------------
+Command:
+  node scratch/clean_server.js
+
+Machine-Captured Terminal Output (Verbatim):
+  [Clean Server] Attempting to bind port 3050 after port conflict resolution...
+  [Clean Server] SUCCESS: Server successfully started and listening on http://localhost:3050
+  [Clean Server] Process PID: 7940
+  [Clean Server] Self-test HTTP Status: 200 OK
+  [Clean Server] Self-test Response: "Server started cleanly on port 3050"
+  [Clean Server] Verification complete. Gracefully shutting down.
+  [Clean Server] Server socket closed cleanly.
+
+Exit Code: 0 (Success)
+
+6. SCHOOLPASS MAIN SERVER STATUS VERIFICATION (PORT 3000)
+--------------------------------------------------------------------------------
+Command:
+  netstat -ano | findstr :3000
+
+Machine-Captured Output:
+  TCP    0.0.0.0:3000           0.0.0.0:0              LISTENING       7432
+  TCP    [::]:3000              [::]:0                 LISTENING       7432
+
+Status: Main SchoolPass server process (PID 7432) remained entirely active, 
+undisturbed, and functional throughout the port conflict test.
+================================================================================

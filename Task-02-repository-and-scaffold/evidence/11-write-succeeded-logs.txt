@@ -1,0 +1,124 @@
+================================================================================
+SCHOOLPASS ASSESSMENT — TASK 2 EVIDENCE 11: DATABASE WRITE SUCCEEDED
+================================================================================
+Test Execution Timestamp: 2026-10-29T15:56:25.181Z
+Local System Time:        29/10/2026, 16:56:25
+Target Application:       SchoolPass Web Application (Next.js 15.5.27 / React 19.3.0)
+Dev Server URL:           http://localhost:3000
+Dev Server Task ID:       task-162 (PID 7432)
+Target Database:          Neon PostgreSQL Serverless (Development Branch: twilight-dream)
+Branch ID:                br-twilight-dream-b4v9bhgw
+Endpoint ID:              ep-morning-sea-b463ljf1
+Test Account Identity:    test-assessment-guardian-1@schoolpass.test
+Test Student Number:      SP-2026-0001 (Existing seeded student)
+
+--------------------------------------------------------------------------------
+1. HTTP REQUEST DETAILS
+--------------------------------------------------------------------------------
+Method: POST
+URL:    http://localhost:3000/api/auth/register
+Headers:
+  Content-Type: application/json
+  Accept: application/json
+  User-Agent: SchoolPass-Assessment-Tester/1.0
+
+Request Body:
+{
+  "name": "Assessment Test Guardian One",
+  "email": "test-assessment-guardian-1@schoolpass.test",
+  "password": "[REDACTED_SECURE_TEST_PASSWORD]",
+  "studentNumber": "SP-2026-0001"
+}
+
+--------------------------------------------------------------------------------
+2. HTTP RESPONSE DETAILS
+--------------------------------------------------------------------------------
+HTTP Status Code: 200 OK
+Round-Trip Duration: 13846.32 ms
+Completed At: 2026-10-29T15:56:39.029Z
+
+Response Headers:
+  connection: keep-alive
+  content-type: application/json
+  date: Thu, 29 Oct 2026 15:56:39 GMT
+  keep-alive: timeout=5
+  transfer-encoding: chunked
+  vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+
+Response Payload:
+{
+  "success": true,
+  "message": "Registration successful. Please verify your email address.",
+  "verificationToken": "0049958dfb37b0f6b0636acf4eef6ea9729db6e76312fbe8690fc457878fd083",
+  "email": "test-assessment-guardian-1@schoolpass.test",
+  "studentLink": {
+    "success": true,
+    "requestId": "cmvtq7fig0003lgqghuwjj1tj",
+    "studentId": "cmve8ac0d0000lgmcf1tep5jc",
+    "studentName": "Chinedu Okafor",
+    "className": "JSS 1A"
+  }
+}
+
+--------------------------------------------------------------------------------
+3. STATUS CODE ANALYSIS & AUDIT (Assessment Requirement)
+--------------------------------------------------------------------------------
+Observed Status Code: HTTP 200 OK
+
+Analysis of Status Code:
+- The specification explicitly instructs: "Find the status codes. Name them. If there is no 201 anywhere, say so and explain what that means."
+- Status Code Observed: 200 OK.
+- Absence of 201 Created:
+  Although REST conventions specify that creating a new resource should return "201 Created" (RFC 9110 §15.3.2) along with an optional Location header, Next.js route handlers returning 'Response.json({ ... })' default to status code 200 OK unless an explicit '{ status: 201 }' options object is supplied.
+  In 'src/app/api/auth/register/route.ts', the successful registration exit returns:
+    return Response.json({
+      success: true,
+      message: 'Registration successful. Please verify your email address.',
+      ...(isDevStubsEnabled() && { verificationToken: result.verificationToken }),
+      email,
+      studentLink: result.studentLink,
+    });
+  Because no status override was provided to Response.json(), the Next.js runtime serialized the response with HTTP 200 OK rather than HTTP 201 Created. The operation successfully created the database record despite the 200 status code.
+
+--------------------------------------------------------------------------------
+4. DEV SERVER LOG CAPTURE (Next.js Terminal Output)
+--------------------------------------------------------------------------------
+Log stream source: task-162.log
+Log capture start offset: 450 bytes
+New log content emitted during and immediately following the registration request:
+
+[HIBP] Breached password check failed or timed out. Failing open per policy. This operation was aborted
+{"timestamp":"2026-10-29T15:56:34.088Z","level":"info","event":"parent_registered","actorType":"parent","actorId":"cmvtq7a5e0000lgqghf47rizh","outcome":"success"}
+{"timestamp":"2026-10-29T15:56:39.003Z","level":"info","event":"student_link_requested","actorType":"parent","actorId":"cmvtq7a5e0000lgqghf47rizh","entityType":"student","entityId":"cmve8ac0d0000lgmcf1tep5jc","outcome":"success"}
+ POST /api/auth/register 200 in 13686ms
+
+--------------------------------------------------------------------------------
+5. DATABASE PERSISTENCE VERIFICATION (Read-Only Direct Query)
+--------------------------------------------------------------------------------
+Database Client: PrismaClient (read-only verification query)
+Database Branch: twilight-dream (Neon Serverless PostgreSQL)
+
+A. Table: 'parents' (Model: Parent)
+   Row ID:             cmvtq7a5e0000lgqghf47rizh
+   Name:               Assessment Test Guardian One
+   Email:              test-assessment-guardian-1@schoolpass.test
+   Email Verified:     null (Pending verification)
+   Created Timestamp:  2026-10-29T15:56:31.394Z
+   Updated Timestamp:  2026-10-29T15:56:31.394Z
+
+B. Table: 'verification_tokens' (Model: VerificationToken)
+   Token ID:           cmvtq7brh0001lgqg4u5v5j6o
+   Email:              test-assessment-guardian-1@schoolpass.test
+   Token Hash:         3cbf4cd4ba6fad26...[REDACTED]
+   Expires At:         2026-10-30T15:56:32.755Z
+   Created Timestamp:  2026-10-29T15:56:33.485Z
+
+C. Table: 'student_link_requests' (Model: StudentLinkRequest)
+   Link Requests Found: 1
+   [Request 1] ID: cmvtq7fig0003lgqghuwjj1tj | StudentID: cmve8ac0d0000lgmcf1tep5jc | Status: PENDING | Created: 2026-10-29T15:56:38.344Z
+
+Persistence Conclusion:
+The synthetic parent record was definitively written to the development database branch.
+Verified Primary Key: cmvtq7a5e0000lgqghf47rizh
+Verified CreatedAt:   2026-10-29T15:56:31.394Z
+================================================================================

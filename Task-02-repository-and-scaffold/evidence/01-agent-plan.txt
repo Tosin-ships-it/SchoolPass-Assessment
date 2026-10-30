@@ -1,0 +1,159 @@
+================================================================================
+PRE-BUILD PLAN: SCHOOLPASS SCAFFOLD & FOUNDATION SETUP
+================================================================================
+
+Document: Pre-Build Plan (Task 2 Evidence 01)
+Source Conversation ID: bc3f6aac-333c-4e8d-b2bf-b21ce43954c0
+Plan Formulation Step: Step 114 (Timestamp: 2026-09-30T20:45:00Z)
+Preceding User Prompt: Step 59 ("Create an implementation that will resolve all fixes in the existing context structure without breaking the .agent/rules and /agent/skills structure. Then draw up an implementation plan for scaffolding the app based on all you now know")
+Subsequent Authorization: Step 115 ("Proceed to Phase 2...")
+
+--------------------------------------------------------------------------------
+AUTHENTIC HISTORICAL AGENT PLAN (VERBATIM RECORD FROM STEP 114)
+--------------------------------------------------------------------------------
+
+## Context Fixes Implemented
+
+All context structure inconsistencies and missing configurations have been resolved cleanly while **keeping the `.agent/rules` and `.agent/skills` structure completely intact**:
+
+1. **Environment Variables (`RULES_ENV.md`):**
+   - Populated with the confirmed names and single purposes from `.env.example`:
+     - `DATABASE_URL`: PostgreSQL connection string (Neon).
+     - `GEMINI_API_KEY`: API key for Gemini embeddings & Flash Q&A model.
+     - `FLUTTERWAVE_PUBLIC_KEY`: Public key for client-side checkout.
+     - `FLUTTERWAVE_SECRET_KEY`: Secret key for server-side verification and refunds.
+     - `FLUTTERWAVE_WEBHOOK_SECRET`: Secret hash for webhook signature verification.
+     - `SESSION_SECRET`: Secret for signing httpOnly session cookies.
+     - `NEXT_PUBLIC_APP_URL`: Canonical base URL.
+
+2. **Folder Map Protection (`RULES_FOLDER_MAP.md`):**
+   - Corrected the repo tree specification to explicitly list `.agent/rules/` and `.agent/skills/` preserving the exact on-disk directory names.
+
+3. **PRD Section 17 Resolved Configurations Synced:**
+   - `.agent/rules/Config.md`: Synced uptime target (99%), AI accuracy target (70%), password reset (email link only), WhatsApp prefill (question text only), arrival reminder (SMS/email, no push), 3G performance targets (FCP < 5s, TTI < 8s), and daily question limit (20 questions/parent/day).
+   - `.agent/rules/Ai.md`: Synced passage size (512 tokens with 50-token overlap), re-embedding window (5 mins), and daily question limits.
+   - `.agent/rules/Arrival.md`: Synced arrival window (6:30 AM – 10:00 AM), expiration at 10:00 AM, and manual code rate limit (5 attempts / 15 mins).
+   - `.agent/rules/Payments.md`: Synced partial payments allowed (min ₦1,000), refund window (Admin only, 30 days), webhook timeout (15 mins), and stuck transaction timeout (24 hours).
+   - `.agent/rules/Retention.md`: Synced NDPR 7-year retention period before archiving and deletion.
+
+4. **Design Tokens Resolution (`design-tokens.tokens.json`, `convert-tokens.js`, `tokens.css`):**
+   - Added token definitions for Spacing (`--spacing-3xs` through `--spacing-4xl`), Border Radius (`--radius-none` through `--radius-full`), and Motion/Transitions (`--motion-duration-*`, `--motion-easing-*`).
+   - Updated `convert-tokens.js` and regenerated `tokens.css` so that 100% of UI spacing, radii, typography, shadows, and colors are powered exclusively by CSS variables without hardcoding.
+
+---
+
+## Scaffolding Implementation Plan (Phase 2)
+
+### 1. Package Installation Request (Per `RULES_COMMANDS.md` Rule 2)
+Before installing packages, explicit user approval is required. The following dependencies are required to scaffold the Next.js foundation:
+
+| Package | Version | Reason |
+|---|---|---|
+| `next` | `^15.0.0` (or `^14.2.0`) | App Router web application framework specified in PRD & tech stack |
+| `react` | `^19.0.0` (or `^18.3.0`) | Peer dependency for Next.js |
+| `react-dom` | `^19.0.0` (or `^18.3.0`) | React DOM renderer |
+| `typescript` | `^5.0.0` | Strict TypeScript types |
+| `@types/node` | `^20.0.0` | Node.js type definitions |
+| `@types/react` | `^19.0.0` (or `^18.3.0`) | React type definitions |
+| `@types/react-dom` | `^19.0.0` (or `^18.3.0`) | React DOM type definitions |
+| `prisma` | `^6.0.0` (dev) | Prisma CLI for schema management |
+| `@prisma/client` | `^6.0.0` | Prisma Client library |
+| `server-only` | `^0.0.1` | Enforces server-only boundary for DB, logging, and auth per `RULES_FOLDER_MAP.md` |
+
+*(No feature packages, UI component libraries, or extra dependencies will be added).*
+
+---
+
+### 2. File Scaffolding Plan
+
+#### A. Tooling & Configuration
+- `package.json`: Scripts for `dev`, `build`, `start`, `lint`, `typecheck`.
+- `tsconfig.json`: TypeScript configuration with path alias `@/*` pointing to `./src/*`.
+- `next.config.js`: Clean Next.js configuration.
+- `prisma/schema.prisma`: Configures PostgreSQL datasource pointing to `env("DATABASE_URL")` with `postgresql` provider and Prisma client generator. **No models or migrations will be created**.
+
+#### B. Architectural Directories (`RULES_FOLDER_MAP.md`)
+Create all required folders with placeholder `.gitkeep` or barrel exports preserving module boundaries:
+```
+src/
+├── app/
+│   ├── (parent)/
+│   │   ├── ask/
+│   │   ├── records/
+│   │   ├── arrival/
+│   │   ├── pay/
+│   │   └── office/
+│   ├── (staff)/
+│   │   ├── info/
+│   │   ├── attendance/
+│   │   ├── arrival-code/
+│   │   ├── payments/
+│   │   ├── reports/
+│   │   ├── settings/
+│   │   ├── staff-accounts/
+│   │   └── guardian-links/
+│   ├── api/
+│   │   ├── ask/
+│   │   ├── records/
+│   │   ├── arrival/
+│   │   ├── payments/
+│   │   └── reports/
+│   ├── auth/
+│   ├── layout.tsx
+│   ├── page.tsx
+│   ├── loading.tsx
+│   └── error.tsx
+└── lib/
+    ├── ai/api/
+    ├── payments/api/
+    ├── arrival/api/
+    ├── attendance/
+    ├── retention/
+    ├── auth/
+    ├── logging/
+    ├── db/
+    └── errors/
+```
+
+#### C. Error Strings Module (`RULES_ERROR_STATES.md`)
+- `src/lib/errors/strings.ts`: Single source of truth for cross-feature strings:
+  - Ask the Office fallback: *"I couldn't find an approved answer to this. You can ask the school office."*
+  - Generic retry message: *"Something went wrong. Please try again."*
+  - Non-school day message: *"There is no school today."*
+
+#### D. Base Layout & Error/Loading States (PRD Section 15)
+- `src/app/layout.tsx`:
+  - Imports `tokens.css` and sets font family to DM Sans (`var(--typography-body-large-fontfamily)`).
+  - Sets viewport metadata for mobile responsiveness.
+- `src/app/loading.tsx`:
+  - Design system loading indicator using `--color-roles-primary` and `--spacing-*` tokens.
+- `src/app/error.tsx`:
+  - Client error boundary displaying the exact fallback wording from `src/lib/errors/strings.ts` with a styled retry button.
+
+#### E. Home Screen (`src/app/page.tsx`)
+- Fits exactly `100vh` (`100dvh` for mobile browsers) with **no scrolling**.
+- Strict design token styling:
+  - Background: `var(--color-roles-background)`
+  - App Name: `SchoolPass` using `var(--typography-headline-large-*)` and `var(--color-roles-primary)`
+  - Product Promise Tagline: *"The school's answers. Your child's records. One place."* using `var(--typography-body-large-*)` and `var(--color-roles-on-surface-variant)`
+  - Primary Action Button: "Sign in" styled using `var(--color-roles-primary)`, `var(--color-roles-on-primary)`, `var(--radius-sm)`, and `var(--spacing-md)` with no auth logic.
+
+---
+
+### 3. Verification Steps
+1. Run `npm run typecheck` to confirm zero TypeScript compilation errors.
+2. Run `npm run build` to verify the Next.js production build succeeds.
+3. Test local startup with `npm run dev`.
+
+Please confirm approval for installing the listed packages and proceeding with Phase 2 scaffolding.
+
+Assumptions: none.
+
+--------------------------------------------------------------------------------
+REPRESENTATION OF SOURCE-OF-TRUTH RULES AND CONSTRAINTS (HISTORICAL SUMMARY)
+--------------------------------------------------------------------------------
+- Authority: PRD v6.0, Addendum v6.1, and .agent/rules/ are the absolute source of truth.
+- Token Enforcement: 100% of styling references design system tokens; zero hard-coded hex or dimension values.
+- Scope Boundaries: Pure foundation only; explicitly no feature logic, no auth implementation, no payment processing, no AI pipelines, no database models, and no migrations.
+- Reporting Duty: Upon completion, the agent must report build status, startup instructions, all created files, assumptions, and unresolved issues.
+================================================================================

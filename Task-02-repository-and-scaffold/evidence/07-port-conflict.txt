@@ -1,0 +1,84 @@
+================================================================================
+SchoolPass Assessment - Task 2 Evidence: Port Conflict
+Deliverable: evidence/07-port-conflict.txt
+Assessment Section: Step 5 - Break the server three ways and recover (Failure 2)
+Timestamp: 2026-10-29T14:49:08+01:00 (13:49:08 UTC)
+Environment: Windows 11 / PowerShell / Node.js v22.13.0
+================================================================================
+
+1. EXISTING SCHOOLPASS APPLICATION OBSERVATION (PORT 3000)
+--------------------------------------------------------------------------------
+Before initiating the port conflict exercise, the active SchoolPass application 
+server running on port 3000 was observed:
+
+Command:
+  netstat -ano | findstr :3000
+
+Captured Output:
+  TCP    0.0.0.0:3000           0.0.0.0:0              LISTENING       7432
+  TCP    [::]:3000              [::]:0                 LISTENING       7432
+
+Status: Active Next.js development server (PID: 7432).
+Safety Constraint: Main SchoolPass application server on port 3000 was preserved 
+and not disturbed.
+
+2. ISOLATED DISPOSABLE TEST PORT SELECTION (PORT 3050)
+--------------------------------------------------------------------------------
+To test port conflict and recovery safely without stopping port 3000, an 
+isolated disposable test port was selected: Port 3050.
+
+Pre-check Command:
+  netstat -ano | findstr :3050
+
+Result: No active listeners found. Port 3050 was available.
+
+3. STARTING THE OCCUPYING PROCESS (DISPOSABLE SERVER 1)
+--------------------------------------------------------------------------------
+Command:
+  node scratch/disposable_server.js
+
+Server 1 Startup Log:
+  [Disposable Server 1] Started successfully.
+  [Disposable Server 1] PID: 9484
+  [Disposable Server 1] Listening on: http://localhost:3050
+
+Status: Port 3050 successfully bound and held by Process ID (PID) 9484.
+
+4. COLLISION ATTEMPT: STARTING CONFLICTING PROCESS (DISPOSABLE SERVER 2)
+--------------------------------------------------------------------------------
+Command:
+  node scratch/conflicting_server.js
+
+Executing Process PID: 3532
+Target Port: 3050
+
+5. MACHINE-CAPTURED TERMINAL OUTPUT (VERBATIM)
+--------------------------------------------------------------------------------
+[Disposable Server 2] Attempting to bind to port 3050...
+[Disposable Server 2] PID: 3532
+[Disposable Server 2] Port collision error encountered:
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3050
+    at Server.setupListenHandle [as _listen2] (node:net:2328:16)
+    at listenInCluster (node:net:2437:12)
+    at node:net:2666:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3050
+}
+
+6. RESULT & DIAGNOSIS
+--------------------------------------------------------------------------------
+Exit Code: 1 (Failure)
+Error Code: EADDRINUSE (Address Already In Use)
+Errno: -4091
+Syscall: listen
+Diagnosis:
+An operating system network socket cannot be bound simultaneously by two independent 
+user-space processes to the same IP address and port tuple (0.0.0.0:3050). Because 
+PID 9484 already held the socket in a `LISTENING` state, the second process (PID 3532) 
+was denied binding by the Windows networking stack, triggering an unhandled 
+EADDRINUSE exception.
+================================================================================

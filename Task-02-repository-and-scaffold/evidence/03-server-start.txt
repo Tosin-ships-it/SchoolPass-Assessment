@@ -1,0 +1,36 @@
+================================================================================
+DEVELOPMENT SERVER STARTUP RECORD
+================================================================================
+
+Project Path: C:\Users\gbola\Desktop\SchoolPass
+Command: npm run dev
+Timestamp: 2026-10-29 13:35:15+01:00
+Startup Result: Success
+
+Documented Command Source:
+- package.json ("dev": "next dev")
+- README.md (Section: Getting Started -> 4. Run development server)
+
+Reported Configuration & Runtime Details:
+- Framework: Next.js 15.5.27
+- Local URL: http://localhost:3000
+- Network URL: http://172.20.10.10:3000
+- Port Verification: Active listener verified on TCP port 3000
+- Environments Loaded: .env.local, .env (filenames only; values omitted)
+- Startup Duration: 23.9s
+- Warnings / Errors: None
+
+--------------------------------------------------------------------------------
+CAPTURED TERMINAL OUTPUT
+--------------------------------------------------------------------------------
+> schoolpass@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.5.27
+   - Local:        http://localhost:3000
+   - Network:      http://172.20.10.10:3000
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Ready in 23.9s
+================================================================================

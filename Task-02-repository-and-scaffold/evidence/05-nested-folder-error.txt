@@ -1,0 +1,61 @@
+================================================================================
+SchoolPass Assessment - Task 2 Evidence: Nested Folder Error
+Deliverable: evidence/05-nested-folder-error.txt
+Assessment Section: Step 5 - Break the server three ways and recover (Failure 1)
+Timestamp: 2026-10-29T14:38:11+01:00 (13:38:11 UTC)
+Environment: Windows 11 / PowerShell / Node.js v22.13.0 / npm v10.9.2
+Sandbox Path: C:\Users\gbola\.gemini\antigravity-ide\brain\f0cd2349-c592-4808-9e5b-5d1cd529f219\scratch\nested-repro\sandbox-root
+================================================================================
+
+1. FAILURE SCENARIO OVERVIEW
+--------------------------------------------------------------------------------
+When scaffolding a project with an AI agent or automated CLI (such as running 
+`npx create-next-app SchoolPass` from within a repository directory named `SchoolPass`), 
+the tool frequently creates an unintended nested folder structure:
+  <repo-root>/
+    └── SchoolPass/
+          ├── package.json
+          └── src/
+
+When a developer or automated build pipeline subsequently runs commands from the 
+repository root (`<repo-root>/`), npm fails because no `package.json` exists in 
+the current working directory.
+
+2. PRE-FAILURE DIRECTORY STRUCTURE (SANDBOX AUDIT)
+--------------------------------------------------------------------------------
+Working Directory:
+  C:\Users\gbola\.gemini\antigravity-ide\brain\f0cd2349-c592-4808-9e5b-5d1cd529f219\scratch\nested-repro\sandbox-root
+
+Directory Contents:
+  - SchoolPass\ (nested directory)
+      ├── package.json
+      └── README.md
+
+Top-level `package.json` status: MISSING (Nested at ./SchoolPass/package.json)
+
+3. COMMAND EXECUTED
+--------------------------------------------------------------------------------
+Command: npm run dev
+Execution Working Directory: ...\scratch\nested-repro\sandbox-root (Outer Root)
+
+4. MACHINE-CAPTURED TERMINAL OUTPUT (VERBATIM)
+--------------------------------------------------------------------------------
+npm error code ENOENT
+npm error syscall open
+npm error path C:\Users\gbola\.gemini\antigravity-ide\brain\f0cd2349-c592-4808-9e5b-5d1cd529f219\scratch\nested-repro\sandbox-root\package.json
+npm error errno -4058
+npm error enoent Could not read package.json: Error: ENOENT: no such file or directory, open 'C:\Users\gbola\.gemini\antigravity-ide\brain\f0cd2349-c592-4808-9e5b-5d1cd529f219\scratch\nested-repro\sandbox-root\package.json'
+npm error enoent This is related to npm not being able to find a file.
+npm error enoent
+npm error A complete log of this run can be found in: C:\Users\gbola\AppData\Local\npm-cache\_logs\2026-10-29T13_38_11_285Z-debug-0.log
+
+5. RESULT & DIAGNOSIS
+--------------------------------------------------------------------------------
+Exit Code: 1 (Failure)
+Error Type: ENOENT (Error No Entry / File Not Found - errno -4058)
+Diagnosis:
+npm requires `package.json` in the current working directory to discover script 
+definitions (`scripts.dev`). Because the agent scaffolded into `./SchoolPass/` 
+rather than `./`, executing `npm run dev` at the repository root fails immediately 
+at the filesystem lookup stage before any Node process or server can initialize.
+================================================================================

@@ -1,0 +1,124 @@
+================================================================================
+SCHOOLPASS ASSESSMENT — TASK 2 EVIDENCE 12: SECOND SUCCESSFUL DATABASE WRITE
+================================================================================
+Test Execution Timestamp: 2026-10-29T17:55:02.935Z
+Local System Time:        29/10/2026, 18:55:02
+Target Application:       SchoolPass Web Application (Next.js 15.5.27 / React 19.3.0)
+Dev Server URL:           http://localhost:3000
+Dev Server Task ID:       task-162 (PID 7432)
+Target Database:          Neon PostgreSQL Serverless (Development Branch: twilight-dream)
+Branch ID:                br-twilight-dream-b4v9bhgw
+Endpoint ID:              ep-morning-sea-b463ljf1
+Test Account Identity:    test-assessment-guardian-2@schoolpass.test
+Test Student Number:      SP-2026-0002 (Second seeded student)
+
+--------------------------------------------------------------------------------
+1. HTTP REQUEST DETAILS (Second Registration)
+--------------------------------------------------------------------------------
+Method: POST
+URL:    http://localhost:3000/api/auth/register
+Headers:
+  Content-Type: application/json
+  Accept: application/json
+  User-Agent: SchoolPass-Assessment-Tester/1.0
+
+Request Body:
+{
+  "name": "Assessment Test Guardian Two",
+  "email": "test-assessment-guardian-2@schoolpass.test",
+  "password": "[REDACTED_SECURE_TEST_PASSWORD]",
+  "studentNumber": "SP-2026-0002"
+}
+
+--------------------------------------------------------------------------------
+2. HTTP RESPONSE DETAILS
+--------------------------------------------------------------------------------
+HTTP Status Code: 200 OK
+Round-Trip Duration: 9710.85 ms
+Completed At: 2026-10-29T17:55:12.652Z
+
+Response Headers:
+  connection: keep-alive
+  content-type: application/json
+  date: Thu, 29 Oct 2026 17:55:12 GMT
+  keep-alive: timeout=5
+  transfer-encoding: chunked
+  vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+
+Response Payload:
+{
+  "success": true,
+  "message": "Registration successful. Please verify your email address.",
+  "verificationToken": "dc644024a0849c3c0a253c0434b687f2baed7e8ad340365b0e3208b98d457b58",
+  "email": "test-assessment-guardian-2@schoolpass.test",
+  "studentLink": {
+    "success": true,
+    "requestId": "cmvtufwdg0007lgqgzv0z68vw",
+    "studentId": "cmvi7qxgi0000lg5sx2e64zh3",
+    "studentName": "Amina Bello",
+    "className": "JSS 1B"
+  }
+}
+
+--------------------------------------------------------------------------------
+3. STATUS CODE ANALYSIS & AUDIT (Assessment Requirement)
+--------------------------------------------------------------------------------
+Observed Status Code: HTTP 200 OK
+
+Analysis of Status Code:
+- Specification requirement: "Find the status codes. Name them. If there is no 201 anywhere, say so and explain what that means."
+- Status Code: 200 OK.
+- Explanation: The registration handler in 'src/app/api/auth/register/route.ts' returns 'Response.json({...})' upon success. Because no explicit status override is provided, the Next.js runtime defaults to status code 200 OK rather than 201 Created. The row was successfully created in PostgreSQL despite the 200 status code.
+
+--------------------------------------------------------------------------------
+4. DEV SERVER LOG CAPTURE (Next.js Terminal Output)
+--------------------------------------------------------------------------------
+Log stream source: task-162.log
+Log capture start offset: 1450 bytes
+New log content emitted during second registration:
+
+{"timestamp":"2026-10-29T17:55:09.955Z","level":"info","event":"parent_registered","actorType":"parent","actorId":"cmvtuftf60004lgqg0kelwxob","outcome":"success"}
+{"timestamp":"2026-10-29T17:55:12.617Z","level":"info","event":"student_link_requested","actorType":"parent","actorId":"cmvtuftf60004lgqg0kelwxob","entityType":"student","entityId":"cmvi7qxgi0000lg5sx2e64zh3","outcome":"success"}
+ POST /api/auth/register 200 in 9488ms
+
+--------------------------------------------------------------------------------
+5. PERSISTED DATABASE ROWS COMPARISON (Side-by-Side Proof of Distinct Timestamps)
+--------------------------------------------------------------------------------
+Database Client: PrismaClient (read-only verification query)
+Database Branch: twilight-dream (Neon Serverless PostgreSQL)
+
+A. First Persisted Row (test-assessment-guardian-1@schoolpass.test):
+   ID:                 cmvtq7a5e0000lgqghf47rizh
+   Name:               Assessment Test Guardian One
+   Email:              test-assessment-guardian-1@schoolpass.test
+   Email Verified:     null
+   Created Timestamp:  2026-10-29T15:56:31.394Z
+   Updated Timestamp:  2026-10-29T15:56:31.394Z
+
+B. Second Persisted Row (test-assessment-guardian-2@schoolpass.test):
+   ID:                 cmvtuftf60004lgqg0kelwxob
+   Name:               Assessment Test Guardian Two
+   Email:              test-assessment-guardian-2@schoolpass.test
+   Email Verified:     null
+   Created Timestamp:  2026-10-29T17:55:08.082Z
+   Updated Timestamp:  2026-10-29T17:55:08.082Z
+
+C. Time Difference Between Rows:
+   Row 1 CreatedAt:    2026-10-29T15:56:31.394Z
+   Row 2 CreatedAt:    2026-10-29T17:55:08.082Z
+   Elapsed Time:       118.61 minutes apart
+
+D. Second Row Verification Token:
+   Token ID:           cmvtufudt0005lgqgllk55g12
+   Email:              test-assessment-guardian-2@schoolpass.test
+   Token Hash:         b5b83136e48c7802...[REDACTED]
+   Expires At:         2026-10-30T17:55:08.769Z
+   Created Timestamp:  2026-10-29T17:55:09.329Z
+
+E. Second Row Student Link Request:
+   Link Requests Found: 1
+   [Request 1] ID: cmvtufwdg0007lgqgzv0z68vw | StudentID: cmvi7qxgi0000lg5sx2e64zh3 | Status: PENDING | Created: 2026-10-29T17:55:11.909Z
+
+Persistence Conclusion:
+Two distinct rows with distinct IDs and real timestamps separated by 118.61 minutes have been definitively persisted in the development database branch.
+================================================================================
