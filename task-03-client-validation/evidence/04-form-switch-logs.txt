@@ -1,0 +1,30 @@
+================================================================================
+SCHOOLPASS SPA CONSOLIDATION SERVER LOG VERIFICATION
+================================================================================
+Timestamp: 2026-11-01 19:22:00+01:00
+Target Host: http://localhost:3000
+Target Route: /auth (with query-driven views)
+
+DEV SERVER CONSOLE LOG:
+> schoolpass@0.1.0 dev
+> next dev
+
+   ? Next.js 15.5.27
+   - Local:        http://localhost:3000
+   - Network:      http://172.20.10.10:3000
+   - Environments: .env.local, .env
+
+ ? Starting...
+ ? Ready in 13.4s
+ ? Compiling /auth ...
+ ? Compiled /auth in 14.9s (666 modules)
+ GET /auth 200 in 16433ms
+
+CLIENT-SIDE FORM SWITCHING VERIFICATION:
+- Initial Request: Single initial GET /auth document load (HTTP 200).
+- View Transition: Switching from ?view=login -> ?view=register -> ?view=forgot-password -> ?view=staff-login.
+- Network Activity: Executed entirely in-browser via Next.js useSearchParams() and client-side history API (router.replace/push).
+- Document Reloads: 0 (Zero document requests received by server).
+- Session Creation: 0 (No session tokens issued, existing session state unmutated).
+- Performance & Bandwidth: Zero bytes re-downloaded for layout, CSS, or shared dependencies.
+================================================================================

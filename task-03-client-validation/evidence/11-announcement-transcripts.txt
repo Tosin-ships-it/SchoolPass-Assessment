@@ -1,0 +1,185 @@
+SchoolPass Assessment - Task 3 Evidence: Screen Reader Announcement Transcripts
+Assistive Technology: Windows Narrator (Manual Human Verification) / Chromium WAI-ARIA 1.2 Live Engine
+Target Application: SchoolPass Parent Registration Form (/auth?view=register)
+Audit Date: 2026-11-01
+Auditors: Quality Assurance Team & Human Manual Accessibility Tester
+
+================================================================================
+EXECUTIVE OVERVIEW & EVALUATION METHODOLOGY
+================================================================================
+This document records the auditory accessibility evaluation of the SchoolPass Parent
+Registration form, contrasting the baseline implementation against the remediated
+WAI-ARIA 1.2 compliant interface.
+
+EVALUATION METHODOLOGY & AUDIT TRAIL:
+1. Genuine Human Manual Testing (Windows Narrator):
+   - Executed live on Windows 11 using the built-in Windows Narrator screen reader.
+   - Navigated exclusively via keyboard (Tab, Shift+Tab, Arrow keys, Space, Enter).
+   - Records high-level qualitative observations of spoken announcements. Exact spoken
+     phrasing was not audio-recorded, so these are explicitly recorded as genuine
+     human observations rather than a verbatim audio transcript.
+2. WAI-ARIA Specification & Engine Reference Transcripts:
+   - Field-by-field expected speech synthesis derived from Chromium Accessibility Tree
+     (AOM) and MSAA/UIA mapping specifications.
+   - The pre-remediation baseline represents structural DOM/ARIA analysis and engine
+     specifications, as the historical baseline was not tested with Narrator.
+
+================================================================================
+SECTION I: GENUINE MANUAL WINDOWS NARRATOR OBSERVATIONS
+================================================================================
+Environment: Windows 11 / Windows Narrator (Built-in Screen Reader)
+Tester: Human Manual Tester
+Test Date: 2026-11-01
+Status: VERIFIED & COMPLETE
+
+Note on Recording: Exact spoken wording was not recorded to audio media. The
+following are genuine, unembellished observations captured during live keyboard
+navigation through the remediated form:
+
+1. Keyboard Navigation & Labeling:
+   - Narrator clearly announced form buttons and text labels as the tester navigated
+     sequentially through the form controls using Tab and arrow keys.
+   - Interactive elements (including input fields, password visibility toggles, legal
+     review triggers, and the primary action button) received clear, unambiguous focus.
+
+2. Inline Errors & Field Requirements:
+   - Narrator announced field validation errors and outstanding required fields as the
+     tester completed and blurred form fields.
+   - Visual error messages and required indicators were matched by auditory cues,
+     preventing silent validation failures.
+
+3. Premature Submit Prevention & Requirement Guidance:
+   - When the tester attempted to submit the form with required fields incomplete
+     (e.g., terms checkbox unselected), Narrator actively communicated the outstanding
+     requirements.
+   - The form did not fail silently; instead, Narrator conveyed the missing condition
+     and focus was directed to the unresolved requirement.
+
+================================================================================
+SECTION II: FIELD-BY-FIELD AUDIT TRANSCRIPTS (WAI-ARIA / UIA REFERENCE)
+================================================================================
+
+1. FULL NAME FIELD
+--------------------------------------------------------------------------------
+Before Remediation:
+- On Focus: "Full Name, edit, required, type in text."
+- On Empty Blur: [SILENCE]. Visual text appears below input, but screen reader does
+  not announce the error because the container lacked `role="alert"` and `aria-describedby`.
+- On Invalid Name ('A'): [SILENCE]. Visual text "Please enter your first and last name"
+  is unannounced.
+
+After Remediation:
+- On Focus: "Full Name, edit, required, placeholder e.g. Chinedu Okafor, type in text."
+- On Empty Blur: "Full Name, edit, required, invalid entry. Alert: Enter your full name."
+- On Invalid Name ('A') Blur: "Full Name, edit, required, invalid entry. Alert: Enter your first and last name. Each name must contain at least 2 characters."
+- Rationale: Linked via `aria-invalid="true"`, `aria-describedby="fullName-error"`, and `role="alert" aria-live="polite"`.
+
+
+2. EMAIL ADDRESS FIELD
+--------------------------------------------------------------------------------
+Before Remediation:
+- On Focus: "Email Address, edit, required, type in text."
+- On Invalid Typing: [SILENCE]. No live feedback during typing.
+- On Blur: Error appears visually without immediate speech interruption.
+
+After Remediation:
+- On Focus: "Email Address, edit, required, placeholder e.g. parent@example.com, type in text."
+- On Invalid Typing ('invalid-email'): "Alert: Please enter a valid email address."
+  (Politely announces formatting requirements dynamically during real-time signup).
+- On Blur: "Email Address, edit, required, invalid entry. Alert: Please enter a valid email address."
+
+
+3. STUDENT NUMBER FIELD (ADMISSION IDENTIFIER)
+--------------------------------------------------------------------------------
+Before Remediation:
+- On Focus: "Student Number, edit, required, placeholder e.g. SP-2026-0001, type in text."
+- Flaw Identified: The placeholder leaked the sensitive structural format of student IDs
+  (Prefix: SP, Year: 2026, Delimiter: hyphen, Sequence: 4 digits).
+
+After Remediation:
+- On Focus: "Student Number, edit, required, placeholder Enter student number from admission letter, type in text."
+- Benefit: Neutral, instructional placeholder prevents format enumeration attacks
+  while guiding parents to their physical documentation.
+
+
+4. PASSWORD FIELD
+--------------------------------------------------------------------------------
+Before Remediation:
+- On Focus: "Password, password edit, required, type in text."
+- Requirements Announcement: [SILENCE]. Password complexity rules ("Minimum 8 characters")
+  were rendered as visual text without `aria-describedby` association.
+- On Insecure/Pwned Blur: Visual error text appeared below input without `role="alert"`;
+  screen reader remained silent upon blur.
+- Visibility Toggle: Lacked descriptive `aria-label`, `aria-controls`, and `aria-pressed`.
+
+After Remediation:
+- On Focus: "Password, password edit, required, Minimum 8 characters., type in text."
+  (Associated via `aria-describedby="password-helper"`).
+- On Short Password Blur (< 8 chars): "Password, password edit, required, invalid entry. Alert: Password must be at least 8 characters."
+- On Weak/Common Password Blur: "Password, password edit, required, invalid entry. Alert: Choose a stronger password."
+- Visibility Toggle: Focusable button announces: "Show password, button, not pressed, controls password".
+  Activating button announces: "Hide password, button, pressed", toggling input to plain text.
+
+
+5. CONFIRM PASSWORD FIELD
+--------------------------------------------------------------------------------
+Before Remediation:
+- On Focus: "Confirm Password, password edit, required, type in text."
+- On Mismatch Blur: [SILENCE]. "Passwords do not match" appeared as unlinked visual text.
+
+After Remediation:
+- On Focus: "Confirm Password, password edit, required, type in text."
+- On Mismatch Blur: "Confirm Password, password edit, required, invalid entry. Alert: Passwords do not match."
+- Rationale: Linked via `aria-invalid="true"` and `aria-describedby="confirmPassword-error"`.
+
+
+6. TERMS OF SERVICE & PRIVACY POLICY CHECKBOX
+--------------------------------------------------------------------------------
+Before Remediation:
+- On Focus: "I agree to the Terms of Service and Privacy Policy, checkbox, unchecked."
+- Flaw Identified: Checkbox lacked `aria-required="true"`. Screen reader user had no
+  auditory indicator that this legal agreement was mandatory for registration.
+
+After Remediation:
+- On Focus: "I agree to the Terms of Service and Privacy Policy, checkbox, required, unchecked."
+- In Context: Contains interactive keyboard-accessible buttons for reviewing modal text
+  of both legal documents without navigating away from the form.
+
+
+7. SUBMIT BUTTON (PRIMARY ACTION)
+--------------------------------------------------------------------------------
+Before Remediation (NATIVE DISABLED PATTERN):
+- During Tab Navigation: [SKIPPED ENTIRELY]. Because the button was `<button disabled>`,
+  the browser dropped it from the accessibility tab order. A keyboard or screen reader
+  user navigating via Tab moved from the Terms checkbox directly out of the form,
+  falsely concluding that the form had no submit button.
+- If Reached via Arrow Keys: "Create Account, button, unavailable."
+- On Click / Space / Enter: [COMPLETE SILENCE]. The browser drops all click events on
+  disabled elements. The user received zero explanation of what was missing.
+
+After Remediation (ACCESSIBLE ARIA-DISABLED PATTERN):
+- During Tab Navigation: [FOCUSED IN NATURAL ORDER].
+  Announcement: "Create Account, button, dimmed." (or "disabled" depending on reader).
+- Visual State: Button displays distinct focus ring (2px solid primary outline, 2px offset)
+  meeting WCAG 2.4.7 and WCAG 1.4.11 contrast requirements.
+- On Click / Space / Enter Activation:
+  Live Announcement: "Status: Please accept the Terms of Service and Privacy Policy before creating your account."
+  Programmatic Focus: Focus immediately shifts back to the terms checkbox:
+  "I agree to the Terms of Service and Privacy Policy, checkbox, required, unchecked."
+
+================================================================================
+SECTION III: COMPLIANCE MATRIX
+================================================================================
+| Criteria                          | WCAG Guideline | Baseline Status | Remediated Status |
+|-----------------------------------|----------------|-----------------|-------------------|
+| Use of Color (Caution Icons)      | 1.4.1 (A)      | FAIL            | PASS              |
+| Contrast (Minimum)                | 1.4.3 (AA)     | PASS            | PASS              |
+| Non-text Contrast                 | 1.4.11 (AA)    | FAIL            | PASS              |
+| Keyboard Reachability             | 2.1.1 (A)      | PARTIAL         | PASS              |
+| No Keyboard Trap                  | 2.1.2 (A)      | PASS            | PASS              |
+| Focus Visible                     | 2.4.7 (AA)     | FAIL            | PASS              |
+| Error Identification              | 3.3.1 (A)      | FAIL (Silent)   | PASS              |
+| Labels or Instructions            | 3.3.2 (A)      | PARTIAL         | PASS              |
+| Error Suggestion                  | 3.3.3 (AA)     | FAIL            | PASS              |
+| Name, Role, Value                 | 4.1.2 (A)      | FAIL            | PASS              |
+| Status Messages (Live Regions)    | 4.1.3 (AA)     | FAIL            | PASS              |

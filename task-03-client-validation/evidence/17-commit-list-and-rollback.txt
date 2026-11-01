@@ -1,0 +1,62 @@
+SchoolPass Assessment - Task 3 Evidence: Git Commit History & Rollback Demonstration
+Execution Date: 2026-11-01T18:43:12.575Z
+Environment: Isolated Temporary Git Sandbox (inside SchoolPass-Assessment)
+Safety Note: Main SchoolPass repository was strictly preserved without git reset or force operations.
+
+================================================================================
+PHASE 1: SANDBOX INITIALIZATION & FEATURE COMMITS
+================================================================================
+Commit 1 Created:
+[master (root-commit) 704d877] feat(auth): initial authentication baseline
+ 1 file changed, 2 insertions(+)
+ create mode 100644 form.js
+
+Commit 2 Created:
+[master ad4d1ae] feat(validation): accessible aria-disabled button and live announcements
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+ create mode 100644 validation.js
+
+Commit 3 Created:
+[master fa99183] security(leak): eliminate sensitive admission format from placeholder
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+================================================================================
+PHASE 2: COMMIT HISTORY INSPECTION (git log --oneline)
+================================================================================
+* fa99183 (HEAD -> master) security(leak): eliminate sensitive admission format from placeholder
+* ad4d1ae feat(validation): accessible aria-disabled button and live announcements
+* 704d877 feat(auth): initial authentication baseline
+
+Target commit selected for rollback: fa99183
+
+================================================================================
+PHASE 3: NON-DESTRUCTIVE ROLLBACK DEMONSTRATION (git revert)
+================================================================================
+Executing: git revert fa99183 --no-edit
+[master 1c6e25c] Revert "security(leak): eliminate sensitive admission format from placeholder"
+ Date: Sun Nov 1 19:43:14 2026 +0100
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Post-Revert Commit Log (Preserving Auditable History):
+* 1c6e25c (HEAD -> master) Revert "security(leak): eliminate sensitive admission format from placeholder"
+* fa99183 security(leak): eliminate sensitive admission format from placeholder
+* ad4d1ae feat(validation): accessible aria-disabled button and live announcements
+* 704d877 feat(auth): initial authentication baseline
+
+Verified Working Tree File Contents After Revert (form.js):
+// Remediated authentication form with accessible submit
+export const ariaDisabled = true;
+export const liveAnnouncement = "Please accept terms";
+
+================================================================================
+PHASE 4: COMPARATIVE ANALYSIS (git revert vs git reset)
+================================================================================
+1. `git revert <commit-id>`:
+   - Mechanism: Creates a new forward commit that applies the inverse diff of the target commit.
+   - Advantages: Non-destructive, safe for shared remote branches, leaves complete audit trail.
+   - Compliance: Mandated for enterprise production systems (SOC2 / ISO 27001 auditability).
+
+2. `git reset --hard <commit-id>`:
+   - Mechanism: Moves branch HEAD pointer backwards and obliterates intermediate commits from working tree.
+   - Hazards: Destroys uncommitted work, desynchronizes remote branch tracking, requires dangerous `git push --force`.
+   - Assessment Rule: Prohibited on SchoolPass main repository.

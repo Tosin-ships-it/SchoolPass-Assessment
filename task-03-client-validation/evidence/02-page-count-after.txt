@@ -1,0 +1,25 @@
+================================================================================
+SCHOOLPASS APPLICATION PAGE COUNT AUDIT - AFTER CONSOLIDATION
+================================================================================
+Timestamp: 2026-11-01 19:18:30+01:00
+Total Routes / Pages Found: 9
+
+PAGES LIST:
+ - src\app\(parent)\ask\page.tsx
+ - src\app\(parent)\records\page.tsx
+ - src\app\(staff)\attendance\page.tsx
+ - src\app\(staff)\guardian-links\page.tsx
+ - src\app\(staff)\students\page.tsx
+ - src\app\auth\page.tsx
+ - src\app\page.tsx
+ - src\app\privacy\page.tsx
+ - src\app\terms\page.tsx
+
+AUTHENTICATION SPECIFIC ROUTES AFTER CONSOLIDATION:
+ - src\app\auth\page.tsx
+
+CONSOLIDATION SUMMARY:
+ - Pages Before: 15
+ - Pages After:  9
+ - Difference:   -6 pages collapsed into unified SPA route (/auth)
+================================================================================

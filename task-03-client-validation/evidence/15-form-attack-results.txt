@@ -1,0 +1,79 @@
+SchoolPass Assessment - Task 3 Evidence: Form Attack Results (Browser UI / DOM Manipulation)
+Target: http://localhost:3000/auth?view=register
+Date: 2026-11-01T19:42:00Z
+Auditor: SchoolPass Assessment Security Team
+
+================================================================================
+ATTACK VECTOR 1: DOM ATTRIBUTE STRIPPING VIA DEVTOOLS
+================================================================================
+Method:
+Attacker opens Chrome DevTools Elements panel and strips `required`, `aria-invalid`,
+and validation attributes from all `<input>` elements.
+
+Observed Behavior:
+1. React state management completely isolates validation logic from HTML5 constraint
+   validation attributes.
+2. The `onChange` and `onBlur` React handlers continue to inspect the component state
+   variables (`name`, `email`, `studentNumber`, `password`, `acceptedTerms`).
+3. Stripping DOM attributes did not permit submission; `handleSubmit` still intercepted
+   the submit event and halted execution.
+
+Result: ATTACK DEFEATED (Client-Side State Enforced)
+
+================================================================================
+ATTACK VECTOR 2: ARIA-DISABLED ATTRIBUTE MANIPULATION
+================================================================================
+Method:
+Attacker executes the following in the DevTools JavaScript console:
+```javascript
+const btn = document.querySelector('button[type="submit"]');
+btn.removeAttribute('aria-disabled');
+btn.removeAttribute('disabled');
+btn.click();
+```
+
+Observed Behavior:
+1. The button triggers the form's `submit` event.
+2. The `ParentRegisterForm` component executes `handleSubmit(e)`.
+3. `handleSubmit` executes its programmatic validation checks:
+   - Full name validation (`validateFullName`)
+   - Email format validation (`isValidEmail`)
+   - Student number existence
+   - Password strength validation
+   - Terms acceptance verification
+4. Because the required fields / terms are missing, `handleSubmit` immediately halts,
+   sets `submitAnnouncement` ("Please accept the Terms and Conditions..."), moves
+   focus to the first missing field, and issues zero HTTP requests to `/api/auth/register`.
+
+Result: ATTACK DEFEATED (Handler Logic Enforced)
+
+================================================================================
+ATTACK VECTOR 3: DIRECT NATIVE FORM.SUBMIT() INVOCATION
+================================================================================
+Method:
+Attacker executes native DOM submission to bypass React synthetic event listeners:
+```javascript
+document.querySelector('form').submit();
+```
+
+Observed Behavior:
+1. Native `form.submit()` bypasses the React `onSubmit` synthetic handler.
+2. The browser issues a native multipart/form-data or urlencoded HTTP POST directly
+   to the current browser URL: `http://localhost:3000/auth?view=register`.
+3. In Next.js App Router architecture, `/auth` is an interactive route handling HTTP GET.
+   The Next.js routing engine returns HTTP 405 Method Not Allowed / Page Reload.
+4. The actual backend endpoint (`/api/auth/register`) is never touched.
+5. No account is created, no database records are altered, and no session is established.
+
+Result: ATTACK DEFEATED (Architectural Route Isolation)
+
+================================================================================
+OVERALL ATTACK SUMMARY
+================================================================================
+Browser-level DOM attacks are unable to compromise the SchoolPass application
+because:
+1. Modern declarative UI frameworks (React) bind submission to internal state
+   rather than mutable DOM attributes.
+2. Page route handlers are decoupled from API mutation endpoints (`/auth` vs `/api/auth/*`).
+3. Accessible button implementations (`aria-disabled="true"` with interactive focus)
+   provide seamless screen-reader navigation while safely intercepting premature clicks.

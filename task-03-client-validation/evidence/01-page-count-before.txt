@@ -1,0 +1,32 @@
+================================================================================
+SCHOOLPASS APPLICATION PAGE COUNT AUDIT - BEFORE CONSOLIDATION
+================================================================================
+Timestamp: 2026-11-01 19:03:00+01:00
+Total Routes / Pages Found: 15
+
+PAGES LIST:
+ - src\app\(parent)\ask\page.tsx
+ - src\app\(parent)\records\page.tsx
+ - src\app\(staff)\attendance\page.tsx
+ - src\app\(staff)\guardian-links\page.tsx
+ - src\app\(staff)\students\page.tsx
+ - src\app\auth\forgot-password\page.tsx
+ - src\app\auth\login\page.tsx
+ - src\app\auth\page.tsx
+ - src\app\auth\register\page.tsx
+ - src\app\auth\reset-password\page.tsx
+ - src\app\auth\staff-login\page.tsx
+ - src\app\auth\verify-email\page.tsx
+ - src\app\page.tsx
+ - src\app\privacy\page.tsx
+ - src\app\terms\page.tsx
+
+AUTHENTICATION SPECIFIC ROUTES BEFORE CONSOLIDATION:
+ - src\app\auth\forgot-password\page.tsx
+ - src\app\auth\login\page.tsx
+ - src\app\auth\page.tsx
+ - src\app\auth\register\page.tsx
+ - src\app\auth\reset-password\page.tsx
+ - src\app\auth\staff-login\page.tsx
+ - src\app\auth\verify-email\page.tsx
+================================================================================
