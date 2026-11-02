@@ -1,0 +1,125 @@
+================================================================================
+SCHOOLPASS ASSESSMENT TASK 4: EVIDENCE 06
+PRISMA CLIENT SCHEMA DRIFT DEMONSTRATION, EXPLANATION, AND REMEDIATION
+================================================================================
+Timestamp: 2026-11-02 12:04:31 UTC
+Environment: Isolated Throwaway Sandbox (Zero Neon DB Risk)
+Database: SQLite Sandbox (sandbox.db)
+ORM: Prisma CLI v6.19.3 / Schema Engine
+Assessment Reference: Ship-and-Found-Five-Tasks.md, Task 4 Step 3
+
+--------------------------------------------------------------------------------
+1. SCENARIO AND OBJECTIVE
+--------------------------------------------------------------------------------
+The assessment brief mandates deliberately inducing and capturing a schema drift
+error by modifying the schema file, regenerating the ORM client without running a
+migration, and executing an application query that relies on the new field.
+
+Step 3 requirement:
+"Hit the drift error on purpose. Change your schema file without migrating, then run
+the application. You will get a client error, because generating the client rebuilds
+the types without touching the database. Capture the error, explain in one paragraph
+what the two things are that have gone out of step, and then fix it."
+
+--------------------------------------------------------------------------------
+2. INDUCING DRIFT
+--------------------------------------------------------------------------------
+Step A: Modified schema.prisma to introduce a new field `ninNumber`:
+  model Parent {
+    id              String    @id @default(cuid())
+    email           String    @unique
+    name            String
+    phoneNumber     String
+    ninNumber       String?   // <-- Field added to schema, but NOT migrated to DB
+    ...
+  }
+
+Step B: Executed `prisma generate`:
+  Command:
+    npx prisma generate --schema="sandbox/prisma/schema.prisma"
+  Result:
+    Rebuilt Prisma Client TypeScript definitions and query engine ASTs to include
+    `ninNumber` as an accessible model property. The physical database (sandbox.db)
+    was deliberately left UNTOUCHED.
+
+--------------------------------------------------------------------------------
+3. RUNTIME EXECUTION & ERROR CAPTURE
+--------------------------------------------------------------------------------
+Application Script Executed (sandbox/run-drift-query.mjs):
+  const parents = await prisma.parent.findMany({
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      ninNumber: true // Client believes this exists; Database does not
+    }
+  });
+
+Raw CLI Error Captured:
+  Attempting to query Parent records with client-expected field ninNumber...
+
+  ================ PRISMA SCHEMA DRIFT ERROR CAPTURED ================
+  Error Name: PrismaClientKnownRequestError
+  Error Code: P2022
+  Message:
+   
+  Invalid `prisma.parent.findMany()` invocation:
+
+  The column `main.Parent.ninNumber` does not exist in the current database.
+  =====================================================================
+
+  Process Exit Code: P2022 (Column does not exist in runtime database)
+
+--------------------------------------------------------------------------------
+4. THE ONE-PARAGRAPH EXPLANATION: WHAT WENT OUT OF STEP
+--------------------------------------------------------------------------------
+The two things that have gone out of step are the Application's Compile-Time Data
+Model (the generated Prisma Client TypeScript definitions and query engine AST) and
+the Physical Database Catalog (the actual tables, columns, and constraints in the
+underlying SQLite/PostgreSQL storage engine). When `prisma generate` was executed,
+it regenerated the JavaScript client artifacts from the text in `schema.prisma`,
+leading the application runtime to believe that `Parent.ninNumber` was a valid,
+queriable column. However, because no migration (`prisma migrate dev` or `ALTER TABLE`)
+was executed against the physical database engine, the runtime catalog never received
+the DDL instruction to allocate that column; when the Prisma query engine issued
+`SELECT id, email, name, ninNumber FROM Parent`, the storage engine rightfully
+rejected the SQL query with error P2022 because the runtime column did not exist.
+
+--------------------------------------------------------------------------------
+5. FIXING THE DRIFT
+--------------------------------------------------------------------------------
+To resolve the drift, the physical database must be brought into alignment with the
+declared schema by running a migration:
+
+Command Executed:
+  npx prisma migrate dev --name add_nin_number --schema="sandbox/prisma/schema.prisma" --skip-generate
+
+CLI Output:
+  Prisma schema loaded from task-04-server-security\sandbox\prisma\schema.prisma
+  Datasource "db": SQLite database "sandbox.db" at "file:./sandbox.db"
+
+  Applying migration `20261102110533_add_nin_number`
+
+  The following migration(s) have been created and applied from new schema changes:
+
+  task-04-server-security\sandbox\prisma\migrations/
+    └─ 20261102110533_add_nin_number/
+      └─ migration.sql
+
+  Your database is now in sync with your schema.
+
+Post-Fix Application Verification:
+  Command:
+    node task-04-server-security/sandbox/run-drift-query.mjs
+
+  Output:
+    Attempting to query Parent records with client-expected field ninNumber...
+    Query result: [
+      { id: 'p1', email: 'parent1@example.com', name: 'Aisha Bello', ninNumber: null },
+      { id: 'p2', email: 'parent2@example.com', name: 'Chidi Okonkwo', ninNumber: null },
+      { id: 'p3', email: 'parent3@example.com', name: 'Tunde Adeleke', ninNumber: null }
+    ]
+
+Result: Physical database catalog and compile-time client types are now 100% in sync.
+Process Exit Code: 0 (SUCCESS)
+================================================================================

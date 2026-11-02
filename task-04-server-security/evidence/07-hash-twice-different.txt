@@ -1,0 +1,106 @@
+================================================================================
+SchoolPass Task 4 Evidence 07: Same Password Different Hashes Demonstration
+================================================================================
+Assessment Track: Task 4 (The Server Is the Source of Truth)
+Target Application: SchoolPass
+Algorithm: Argon2id (RFC 9106) via @node-rs/argon2
+Execution Date: 2026-11-02
+Environment:
+  Operating System: Windows_NT 10.0.26200 (x64)
+  CPU Model: Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz (8 vCPUs)
+  Node.js Version: v24.21.0
+
+--------------------------------------------------------------------------------
+1. CONFIGURATION & TEST INPUT
+--------------------------------------------------------------------------------
+Password Input:
+"Correct-Horse-Battery-Staple-2026!"
+
+Production Argon2id Parameters (from src/lib/auth/crypto.ts):
+- Type: Argon2id (type 2)
+- Version: v=19 (0x13)
+- Memory Cost (m): 65536 KiB (64 MiB)
+- Time Cost / Iterations (t): 3
+- Parallelism / Threads (p): 1
+- Derived Key Output Length: 32 bytes
+- Salt Length: 16 bytes (cryptographically random)
+
+--------------------------------------------------------------------------------
+2. ENCODED PHC OUTPUT STRINGS
+--------------------------------------------------------------------------------
+Hash 1:
+$argon2id$v=19$m=65536,t=3,p=1$Upu0gl17F9OSO/PWGPKBNg$WqHB66CTESlaKMhhmDkV/YXL2jTb76/TsH4iYlPqeKg
+
+Hash 2:
+$argon2id$v=19$m=65536,t=3,p=1$tBem6fX/fyQSfqmoILel2w$yigEKmhM1O1HTSEJ+ENfooPeHT2rujIT0exebst9CRM
+
+Identical Check:
+hash1 === hash2: FALSE (Outputs differ completely)
+
+--------------------------------------------------------------------------------
+3. ANATOMY OF THE PHC STRING & EXTRACTED SALT INFORMATION
+--------------------------------------------------------------------------------
+Standard Modular Crypt Format / PHC String Structure:
+$<algorithm>$v=<version>$m=<memory>,t=<iterations>,p=<parallelism>$<base64_salt>$<base64_hash>
+
+Breakdown of Hash 1:
+- Algorithm Identifier: argon2id
+- Algorithm Version: 19
+- Cost Parameters: m=65536, t=3, p=1
+- Salt (Base64 raw 16 bytes): Upu0gl17F9OSO/PWGPKBNg
+- Derived Key / Hash (Base64 raw 32 bytes): WqHB66CTESlaKMhhmDkV/YXL2jTb76/TsH4iYlPqeKg
+
+Breakdown of Hash 2:
+- Algorithm Identifier: argon2id
+- Algorithm Version: 19
+- Cost Parameters: m=65536, t=3, p=1
+- Salt (Base64 raw 16 bytes): tBem6fX/fyQSfqmoILel2w
+- Derived Key / Hash (Base64 raw 32 bytes): yigEKmhM1O1HTSEJ+ENfooPeHT2rujIT0exebst9CRM
+
+Salt Comparison:
+- Salt 1 ("Upu0gl17F9OSO/PWGPKBNg") !== Salt 2 ("tBem6fX/fyQSfqmoILel2w")
+- The salts are distinct 128-bit (16-byte) random values automatically generated
+  by the cryptographic RNG inside Argon2id during each hash operation.
+
+--------------------------------------------------------------------------------
+4. INDEPENDENT VERIFICATION PROOF
+--------------------------------------------------------------------------------
+Verification Test Execution (using argon2Verify from @node-rs/argon2):
+- verifyPassword("Correct-Horse-Battery-Staple-2026!", hash1) -> TRUE
+- verifyPassword("Correct-Horse-Battery-Staple-2026!", hash2) -> TRUE
+- verifyPassword("WrongPassword123!", hash1)                -> FALSE
+- verifyPassword("WrongPassword123!", hash2)                -> FALSE
+
+Both distinct hashes independently verify the exact same plaintext password.
+
+--------------------------------------------------------------------------------
+5. SECURITY EXPLANATION & WHAT THIS PROVES
+--------------------------------------------------------------------------------
+1. Why the Hashes Differ:
+   Argon2id does not hash the password in isolation. It generates a unique 16-byte
+   cryptographic salt per hashing operation and evaluates H(password, salt, cost).
+   Because the salt is randomized for every invocation, the derived output is
+   statistically unique even for identical input strings.
+
+2. Defense Against Precomputed Rainbow Tables:
+   An attacker cannot compute a single lookup table of popular passwords (e.g.,
+   the top 10 million leaked passwords) and compare it against the database.
+   Because every user record possesses a unique 128-bit salt, an attacker would have
+   to recompute the entire rainbow table specifically for each individual salt
+   ($2^{128}$ possible tables), rendering precomputation attacks economically
+   and computationally unviable.
+
+3. Defense Against Cross-Account Password Matching:
+   If two parents choose the exact same password (e.g. "SchoolPass2026!"), a fast
+   unsalted hash (or single-salted hash) produces identical database entries,
+   revealing to any attacker or observer that both accounts share credentials.
+   With per-record salts, their stored hashes share zero bytes in common,
+   preserving confidentiality across all accounts.
+
+4. Accurate Scope (What This Does and Does Not Prove):
+   Observing two differing hashes proves that the implementation automatically
+   generates and embeds a distinct salt per invocation, and that the verification
+   routine successfully extracts the embedded salt to recompute and verify the
+   hash. It does not by itself prove the mathematical entropy of the underlying
+   OS random number generator, but confirms adherence to RFC 9106 PHC encoding.
+================================================================================

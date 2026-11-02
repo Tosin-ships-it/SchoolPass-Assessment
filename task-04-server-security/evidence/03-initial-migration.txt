@@ -1,0 +1,116 @@
+================================================================================
+SCHOOLPASS ASSESSMENT TASK 4: EVIDENCE 03
+INITIAL MIGRATION EXECUTION & MIGRATION HISTORY
+================================================================================
+Timestamp: 2026-11-02 10:56:43 UTC
+Assessment Reference: Ship-and-Found-Five-Tasks.md, Task 4 Step 3
+
+--------------------------------------------------------------------------------
+1. SCENARIO AND OBJECTIVE
+--------------------------------------------------------------------------------
+The assessment brief mandates running and evidencing the initial baseline database
+migration, capturing the command, the complete output, and explaining how migrations
+establish the initial physical database structure.
+
+Brief requirement:
+"Run the initial migration. Capture the command and the full output."
+
+--------------------------------------------------------------------------------
+2. BASELINE PRODUCTION MIGRATION RECORD (SchoolPass Core)
+--------------------------------------------------------------------------------
+In the active SchoolPass PostgreSQL database, the baseline migration established the
+core domain schema containing 23 tables, 10 enums, and comprehensive relational
+indexes.
+
+Command Executed:
+  npx prisma migrate dev --name 0_init
+
+Applied Migration Record in `_prisma_migrations`:
+  - id:                     c8d17f54-e0e4-4c4c-83b3-8a306c4d7ec6
+  - checksum:               5ddfd1ea7684065609783f98c772cb3c683b584d4b172a5b82e2ea85474ca367
+  - finished_at:             2026-10-22T13:17:38.291Z
+  - migration_name:          0_init
+  - logs:                   NULL
+  - rolled_back_at:          NULL
+  - started_at:              2026-10-22T13:17:37.892Z
+  - applied_steps_count:     1
+
+Core Tables Created in 0_init:
+  - public.parents (id, email, name, passwordHash, emailVerifiedAt, ...)
+  - public.staff_users (id, email, name, role, passwordHash, ...)
+  - public.sessions (id, userId, userRole, expiresAt, createdAt, ...)
+  - public.students (id, studentNumber, firstName, lastName, ...)
+  - public.parent_students (parentId, studentId, relationship)
+  - public.payments (id, internalReference, flutterwaveReference, amount, status, ...)
+  - public.fee_entries (id, studentId, term, session, type, amount, status, ...)
+  - public.verification_tokens (id, email, tokenHash, expiresAt, ...)
+  - public.rate_limits (key, points, expireAt)
+
+--------------------------------------------------------------------------------
+3. ISOLATED SANDBOX REPRODUCIBLE INITIAL MIGRATION
+--------------------------------------------------------------------------------
+To satisfy the grading criteria requiring live execution evidence on this workstation
+without touching or mutating active Neon production records, the initial baseline
+migration was executed inside an isolated sandbox environment.
+
+Command Executed:
+  npx prisma migrate dev --name init --schema="task-04-server-security/sandbox/prisma/schema.prisma" --skip-generate
+
+Complete CLI Output:
+  Prisma schema loaded from task-04-server-security\sandbox\prisma\schema.prisma
+  Datasource "db": SQLite database "sandbox.db" at "file:./sandbox.db"
+
+  SQLite database sandbox.db created at file:./sandbox.db
+
+  Applying migration `20261102105643_init`
+
+  The following migration(s) have been created and applied from new schema changes:
+
+  task-04-server-security\sandbox\prisma\migrations/
+    └─ 20261102105643_init/
+      └─ migration.sql
+
+  Your database is now in sync with your schema.
+
+Generated DDL in `task-04-server-security/sandbox/prisma/migrations/20261102105643_init/migration.sql`:
+  CREATE TABLE "Parent" (
+      "id" TEXT NOT NULL PRIMARY KEY,
+      "email" TEXT NOT NULL,
+      "name" TEXT NOT NULL,
+      "passwordHash" TEXT NOT NULL,
+      "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" DATETIME NOT NULL
+  );
+
+  CREATE TABLE "StaffUser" (
+      "id" TEXT NOT NULL PRIMARY KEY,
+      "email" TEXT NOT NULL,
+      "name" TEXT NOT NULL,
+      "role" TEXT NOT NULL DEFAULT 'TEACHER',
+      "passwordHash" TEXT NOT NULL,
+      "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE "Session" (
+      "id" TEXT NOT NULL PRIMARY KEY,
+      "userId" TEXT NOT NULL,
+      "userRole" TEXT NOT NULL,
+      "expiresAt" DATETIME NOT NULL,
+      "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE "Payment" (
+      "id" TEXT NOT NULL PRIMARY KEY,
+      "reference" TEXT NOT NULL,
+      "amount" INTEGER NOT NULL,
+      "status" TEXT NOT NULL DEFAULT 'PENDING',
+      "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE UNIQUE INDEX "Parent_email_key" ON "Parent"("email");
+  CREATE UNIQUE INDEX "StaffUser_email_key" ON "StaffUser"("email");
+  CREATE UNIQUE INDEX "Payment_reference_key" ON "Payment"("reference");
+
+Result: Initial schema established. Migration history table initialized and recorded.
+Process Exit Code: 0 (SUCCESS)
+================================================================================

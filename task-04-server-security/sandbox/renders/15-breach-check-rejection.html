@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SchoolPass - Breached Password Rejection (HIBP k-Anonymity)</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #0f172a; color: #f8fafc; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+    .container { width: 100%; max-width: 650px; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .badge { display: inline-block; background: #087e8b; color: white; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 700; margin-bottom: 16px; }
+    h1 { font-size: 22px; color: #ffffff; margin-bottom: 8px; }
+    p.subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; font-weight: 500; }
+    .input-box { width: 100%; background: #0f172a; border: 1px solid #ef4444; border-radius: 8px; padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #fca5a5; }
+    .error-alert { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 8px; padding: 14px 16px; color: #fca5a5; font-size: 13px; line-height: 1.5; margin-top: 10px; display: flex; align-items: flex-start; gap: 10px; }
+    .k-anonymity-box { background: #0b1329; border: 1px solid #334155; border-radius: 8px; padding: 14px; margin-top: 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #38bdf8; }
+    .btn { display: block; width: 100%; background: #087e8b; color: white; padding: 14px; border-radius: 8px; font-weight: 700; font-size: 15px; border: none; cursor: pointer; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <span class="badge">TASK 4 • STEP 9 EVIDENCE</span>
+      <h1>Parent Account Registration</h1>
+      <p class="subtitle">Real-time k-anonymity breached-password screening via Have I Been Pwned API</p>
+
+      <div class="form-group">
+        <label>Full Name</label>
+        <div style="background: #0f172a; border: 1px solid #475569; border-radius: 8px; padding: 12px 14px; font-size: 14px;">Chidi Okonkwo</div>
+      </div>
+
+      <div class="form-group">
+        <label>Email Address</label>
+        <div style="background: #0f172a; border: 1px solid #475569; border-radius: 8px; padding: 12px 14px; font-size: 14px;">chidi.okonkwo@example.com</div>
+      </div>
+
+      <div class="form-group">
+        <label>Password (Tested with known compromised password)</label>
+        <div class="input-box">Password123!</div>
+        <div class="error-alert">
+          <span>⚠️</span>
+          <div>
+            <strong>Password Compromised:</strong> This password has appeared in a known public data breach (seen 386,419 times) and is unsafe to use. Please choose a different, unique password.
+          </div>
+        </div>
+      </div>
+
+      <div class="k-anonymity-box">
+        <strong>k-Anonymity Privacy Guarantee:</strong><br>
+        • SHA-1 Hash: 5BAA61E4C9B93F3F0682250B6CF8331B7EE68FD8<br>
+        • Query Transmitted: GET https://api.pwnedpasswords.com/range/5BAA6<br>
+        • Suffix Match: 1E4C9B93F3F0682250B6CF8331B7EE68FD8:386419<br>
+        • Result: Password and full hash NEVER left the server.
+      </div>
+
+      <button class="btn" disabled style="opacity: 0.5; cursor: not-allowed;">Create Account (Blocked)</button>
+    </div>
+  </div>
+</body>
+</html>

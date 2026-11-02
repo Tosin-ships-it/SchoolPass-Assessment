@@ -1,0 +1,130 @@
+================================================================================
+SCHOOLPASS ASSESSMENT TASK 4: EVIDENCE 05
+CANONICAL THREE-STEP ZERO-DOWNTIME MIGRATION ON A POPULATED TABLE
+================================================================================
+Timestamp: 2026-11-02 12:01:46 UTC
+Environment: Isolated Throwaway Sandbox (Zero Neon DB Risk)
+Database: SQLite Sandbox (sandbox.db)
+ORM: Prisma CLI v6.19.3 / Schema Engine
+Assessment Reference: Ship-and-Found-Five-Tasks.md, Task 4 Step 3
+
+--------------------------------------------------------------------------------
+1. THE THREE-STEP ZERO-DOWNTIME PROTOCOL
+--------------------------------------------------------------------------------
+When adding a required (NOT NULL) column to a populated production table, a single
+destructive migration causes service failure (as proven in Evidence 04).
+The industry-standard zero-downtime protocol decomposes the change into three
+discrete, safe phases:
+
+  Phase 1: Add the column as OPTIONAL (nullable).
+  Phase 2: BACKFILL existing rows with valid data (or default values).
+  Phase 3: Enforce the REQUIRED (NOT NULL) constraint once zero nulls remain.
+
+--------------------------------------------------------------------------------
+2. STEP 1: ADD COLUMN AS OPTIONAL (NULLABLE)
+--------------------------------------------------------------------------------
+Schema Modification:
+  model Parent {
+    id              String    @id @default(cuid())
+    email           String    @unique
+    name            String
+    phoneNumber     String?   // <-- Step 1: Optional (nullable)
+    passwordHash    String
+    createdAt       DateTime  @default(now())
+    updatedAt       DateTime  @updatedAt
+  }
+
+Command Executed:
+  npx prisma migrate dev --name step1_optional_phone --schema="sandbox/prisma/schema.prisma" --skip-generate
+
+CLI Output:
+  Prisma schema loaded from task-04-server-security\sandbox\prisma\schema.prisma
+  Datasource "db": SQLite database "sandbox.db" at "file:./sandbox.db"
+
+  Applying migration `20261102110043_step1_optional_phone`
+
+  The following migration(s) have been created and applied from new schema changes:
+
+  task-04-server-security\sandbox\prisma\migrations/
+    └─ 20261102110043_step1_optional_phone/
+      └─ migration.sql
+
+  Your database is now in sync with your schema.
+
+Generated SQL Migration:
+  ALTER TABLE "Parent" ADD COLUMN "phoneNumber" TEXT;
+
+Result: Migration applied instantly with ZERO downtime and zero constraint errors.
+All 3 existing rows now safely hold NULL for phoneNumber.
+
+--------------------------------------------------------------------------------
+3. STEP 2: FILL DATA (DATA BACKFILL)
+--------------------------------------------------------------------------------
+Backfill Execution Script (sandbox/backfill.py):
+  import sqlite3
+  conn = sqlite3.connect('sandbox/prisma/sandbox.db')
+  cur = conn.cursor()
+
+  # Execute backfill
+  cur.execute("UPDATE Parent SET phoneNumber = '+23480' || hex(randomblob(4)) WHERE phoneNumber IS NULL")
+  conn.commit()
+
+Execution Log:
+  Step 2 Pre-check: 3 rows with NULL phoneNumber
+  Step 2 Post-backfill verification:
+    Row p1: Aisha Bello (parent1@example.com) -> phoneNumber = +23480EE792634
+    Row p2: Chidi Okonkwo (parent2@example.com) -> phoneNumber = +2348071A29EE7
+    Row p3: Tunde Adeleke (parent3@example.com) -> phoneNumber = +234809A2ECD24
+  Step 2 Result: 0 NULL rows remaining. Table is fully populated.
+
+Result: 100% of existing rows now hold valid non-null strings.
+
+--------------------------------------------------------------------------------
+4. STEP 3: ENFORCE REQUIRED (NOT NULL) CONSTRAINT
+--------------------------------------------------------------------------------
+Schema Modification:
+  model Parent {
+    id              String    @id @default(cuid())
+    email           String    @unique
+    name            String
+    phoneNumber     String    // <-- Step 3: Enforce NOT NULL constraint
+    passwordHash    String
+    createdAt       DateTime  @default(now())
+    updatedAt       DateTime  @updatedAt
+  }
+
+Command Executed:
+  npx prisma migrate dev --name step3_make_required_phone --schema="sandbox/prisma/schema.prisma" --skip-generate
+
+CLI Output:
+  Prisma schema loaded from task-04-server-security\sandbox\prisma\schema.prisma
+  Datasource "db": SQLite database "sandbox.db" at "file:./sandbox.db"
+
+  Applying migration `20261102110146_step3_make_required_phone`
+
+  The following migration(s) have been created and applied from new schema changes:
+
+  task-04-server-security\sandbox\prisma\migrations/
+    └─ 20261102110146_step3_make_required_phone/
+      └─ migration.sql
+
+  Your database is now in sync with your schema.
+
+Generated SQL Migration (Table Reconstruction with NOT NULL):
+  CREATE TABLE "new_Parent" (
+      "id" TEXT NOT NULL PRIMARY KEY,
+      "email" TEXT NOT NULL,
+      "name" TEXT NOT NULL,
+      "phoneNumber" TEXT NOT NULL,
+      "passwordHash" TEXT NOT NULL,
+      "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" DATETIME NOT NULL
+  );
+  INSERT INTO "new_Parent" SELECT "id", "email", "name", "phoneNumber", "passwordHash", "createdAt", "updatedAt" FROM "Parent";
+  DROP TABLE "Parent";
+  ALTER TABLE "new_Parent" RENAME TO "Parent";
+  CREATE UNIQUE INDEX "Parent_email_key" ON "Parent"("email");
+
+Result: The required column constraint is successfully enforced. No data was lost.
+Process Exit Code: 0 (SUCCESS)
+================================================================================

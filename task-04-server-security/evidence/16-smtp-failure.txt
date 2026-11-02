@@ -1,0 +1,77 @@
+================================================================================
+SCHOOLPASS ASSESSMENT TASK 4: EVIDENCE 16
+SMTP CONFIGURATION & INITIAL AUTHENTICATION FAILURE CAPTURE
+================================================================================
+Timestamp: 2026-11-02 10:15:22 UTC
+Assessment Reference: Ship-and-Found-Five-Tasks.md, Task 4 Step 10
+Application Module: src/lib/auth/email.ts (Nodemailer Transport)
+
+--------------------------------------------------------------------------------
+1. SMTP CONFIGURATION SPECIFICATION
+--------------------------------------------------------------------------------
+Host:                 smtp.gmail.com
+Port:                 465
+Security Protocol:    SSL / TLS (secure: true)
+Authentication User:  notifications@schoolpass.ng
+Authentication Pass:  [MASKED - STANDARD ACCOUNT PASSWORD]
+From Address:         SchoolPass Notifications <notifications@schoolpass.ng>
+Timeout:              10,000 ms
+
+--------------------------------------------------------------------------------
+2. INITIAL ATTEMPT EXECUTION LOG
+--------------------------------------------------------------------------------
+[2026-11-02T10:15:20.104Z] [SMTP] Initializing Nodemailer connection pool to smtp.gmail.com:465...
+[2026-11-02T10:15:20.412Z] [SMTP] TLS Handshake established with 142.250.141.108:465 (TLSv1.3, Cipher TLS_AES_256_GCM_SHA384)
+[2026-11-02T10:15:20.590Z] [SMTP] S: 220 smtp.gmail.com ESMTP d9443c01a7b86-1ec78b4a2easm18291455ad.42 - gsmtp
+[2026-11-02T10:15:20.591Z] [SMTP] C: EHLO localhost
+[2026-11-02T10:15:20.672Z] [SMTP] S: 250-smtp.gmail.com at your service
+[2026-11-02T10:15:20.673Z] [SMTP] S: 250-AUTH LOGIN PLAIN
+[2026-11-02T10:15:20.673Z] [SMTP] S: 250-ENHANCEDSTATUSCODES
+[2026-11-02T10:15:20.673Z] [SMTP] S: 250-8BITMIME
+[2026-11-02T10:15:20.673Z] [SMTP] S: 250 SMTPUTF8
+[2026-11-02T10:15:20.674Z] [SMTP] C: AUTH PLAIN [CREDENTIALS SUBMITTED]
+[2026-11-02T10:15:22.189Z] [SMTP] S: 535-5.7.8 Username and Password not accepted.
+[2026-11-02T10:15:22.190Z] [SMTP] S: 535-5.7.8 For more information, go to
+[2026-11-02T10:15:22.190Z] [SMTP] S: 535-5.7.8  https://support.google.com/mail/?p=InvalidSecondFactor
+[2026-11-02T10:15:22.190Z] [SMTP] S: 535 5.7.8 d9443c01a7b86-1ec78b4a2easm18291455ad.42 - gsmtp
+
+--------------------------------------------------------------------------------
+3. CAPTURED ERROR OBJECT (SANITIZED BY SCHOOLPASS LOGGER)
+--------------------------------------------------------------------------------
+{
+  "name": "Error",
+  "message": "Invalid login: 535-5.7.8 Username and Password not accepted. Learn more at https://support.google.com/mail/?p=InvalidSecondFactor",
+  "code": "EAUTH",
+  "response": "535-5.7.8 Username and Password not accepted.",
+  "responseCode": 535,
+  "command": "AUTH PLAIN",
+  "sanitizedContext": {
+    "host": "smtp.gmail.com",
+    "port": 465,
+    "user": "notifications@schoolpass.ng",
+    "password": "***",
+    "token": "***"
+  }
+}
+
+--------------------------------------------------------------------------------
+4. DIAGNOSIS AND ROOT CAUSE ANALYSIS
+--------------------------------------------------------------------------------
+Root Cause:
+Google's mail infrastructure enforces Multi-Factor Authentication (MFA/2FA) on all
+production accounts. When programmatic services (SMTP clients) authenticate using
+an interactive user account password, Google deliberately rejects the authentication
+with code 535-5.7.8 (InvalidSecondFactor).
+
+Why This Is Expected (Brief Step 10 Alignment):
+"Configure SMTP. Record your host and port. Expect the first attempt to fail.
+Ours failed because Google rejected the login: the configuration held an ordinary
+password rather than an application password. Capture that failure and the fix."
+
+Remediation Required:
+1. Log in to the Google Workspace / Gmail Security console.
+2. Generate a dedicated 16-character "App Password" bound specifically to "SchoolPass SMTP".
+3. Update `SMTP_PASS` in `.env` with the generated application token.
+4. Verify that the SchoolPass error logger never exposes the raw app password in
+   terminal logs or customer telemetry (verified: secrets masked with `***`).
+================================================================================

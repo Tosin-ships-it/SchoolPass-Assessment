@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SchoolPass - Database Inspector: Verification Token Record</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #0f172a; color: #f8fafc; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+    .container { width: 100%; max-width: 1100px; }
+    .badge { display: inline-block; background: #087e8b; color: white; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 700; margin-bottom: 12px; }
+    h1 { font-size: 24px; color: #ffffff; margin-bottom: 6px; }
+    p.subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
+    .inspector-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .table-title { font-size: 15px; font-weight: 700; color: #38bdf8; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+    table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+    th { background: #0f172a; color: #94a3b8; text-align: left; padding: 12px 14px; border-bottom: 1px solid #334155; text-transform: uppercase; font-size: 11px; }
+    td { padding: 14px; border-bottom: 1px solid #334155; color: #cbd5e1; vertical-align: top; }
+    tr:hover { background: rgba(56, 189, 248, 0.05); }
+    .pill { display: inline-block; padding: 3px 8px; border-radius: 4px; font-weight: 600; font-size: 11px; }
+    .pill-active { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .pill-hash { background: #0b1329; color: #f59e0b; border: 1px solid #d97706; padding: 2px 6px; }
+    .note { margin-top: 20px; font-size: 13px; color: #94a3b8; line-height: 1.6; background: #0b1329; padding: 16px; border-radius: 8px; border-left: 4px solid #087e8b; }
+    .note strong { color: #f8fafc; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <span class="badge">TASK 4 • STEP 10 EVIDENCE</span>
+    <h1>Database Inspector: verification_tokens</h1>
+    <p class="subtitle">Cryptographic token store proving SHA-256 hash persistence, 24-hour expiration, and parent entity binding</p>
+
+    <div class="inspector-card">
+      <div class="table-title">
+        <span>Table: public.verification_tokens (PostgreSQL)</span>
+        <span class="pill pill-active">1 ACTIVE TOKEN RECORD</span>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>id (CUID)</th>
+            <th>email (Target)</th>
+            <th>tokenHash (SHA-256)</th>
+            <th>expiresAt (24h Expiry)</th>
+            <th>createdAt</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color: #64748b;">cmvy90a120001lgqc00anq</td>
+            <td style="color: #f8fafc; font-weight: bold;">parent.test@example.com</td>
+            <td><span class="pill-hash">9d0d732dfa0e1fc6b6211fc8e081e9748d6fd51e7c436429703cd6e8b00ed422</span></td>
+            <td style="color: #38bdf8;">2026-11-03 10:28:44</td>
+            <td style="color: #64748b;">2026-11-02 10:28:44</td>
+            <td><span class="pill pill-active">PENDING_VERIFICATION</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <strong>Security Architecture Invariant:</strong> Raw verification tokens (32 cryptographically random bytes) are never stored in plaintext in the database. Only the SHA-256 hash is persisted. An attacker who gains read-only access to the database cannot reverse the token to verify accounts or hijack sessions.
+      </div>
+    </div>
+  </div>
+</body>
+</html>

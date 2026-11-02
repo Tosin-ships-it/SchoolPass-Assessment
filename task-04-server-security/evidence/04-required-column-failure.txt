@@ -1,0 +1,91 @@
+================================================================================
+SCHOOLPASS ASSESSMENT TASK 4: EVIDENCE 04
+DELIBERATE MIGRATION FAILURE: ADDING REQUIRED COLUMN TO POPULATED TABLE
+================================================================================
+Timestamp: 2026-11-02 11:59:15 UTC
+Environment: Isolated Throwaway Sandbox (Zero Neon DB Risk)
+Database: SQLite Sandbox (sandbox.db)
+ORM: Prisma CLI v6.19.3 / Schema Engine
+Assessment Reference: Ship-and-Found-Five-Tasks.md, Task 4 Step 3
+
+--------------------------------------------------------------------------------
+1. SCENARIO AND OBJECTIVE
+--------------------------------------------------------------------------------
+The assessment brief mandates demonstrating the exact failure mode when an engineer
+or automated agent attempts to add a non-nullable (required) column to an existing
+populated table without specifying a default value or backfill strategy.
+
+In a database containing live rows, adding a column with NOT NULL constraint
+violates relational integrity because all existing rows would instantaneously contain
+NULL values for the new column, triggering a database-level constraint rejection.
+
+--------------------------------------------------------------------------------
+2. PRE-CONDITION: POPULATED TABLE STATE
+--------------------------------------------------------------------------------
+Pre-migration verification of Parent table rows in sandbox.db:
+
+Query:
+  SELECT id, email, name, createdAt FROM Parent;
+
+Rows Present (3 records):
+  - p1 | parent1@example.com | Aisha Bello   | 2026-11-02 10:00:00
+  - p2 | parent2@example.com | Chidi Okonkwo | 2026-11-02 10:05:00
+  - p3 | parent3@example.com | Tunde Adeleke | 2026-11-02 10:10:00
+
+Total Records: 3
+
+--------------------------------------------------------------------------------
+3. MODIFIED SCHEMA SPECIFICATION
+--------------------------------------------------------------------------------
+In task-04-server-security/sandbox/prisma/schema.prisma, the Parent model was
+modified to introduce a required String column without a default:
+
+model Parent {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String
+  phoneNumber     String    // <-- Required column added without @default(...)
+  passwordHash    String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+--------------------------------------------------------------------------------
+4. COMMAND EXECUTED
+--------------------------------------------------------------------------------
+npx prisma migrate dev --name add_required_phone --schema="task-04-server-security/sandbox/prisma/schema.prisma" --skip-generate
+
+--------------------------------------------------------------------------------
+5. RAW CLI ERROR OUTPUT CAPTURED
+--------------------------------------------------------------------------------
+Prisma schema loaded from task-04-server-security\sandbox\prisma\schema.prisma
+Datasource "db": SQLite database "sandbox.db" at "file:./sandbox.db"
+
+
+Error: 
+⚠️ We found changes that cannot be executed:
+
+  • Step 0 Added the required column `phoneNumber` to the `Parent` table without a default value. There are 3 rows in this table, it is not possible to execute this step.
+
+You can use prisma migrate dev --create-only to create the migration file, and manually modify it to address the underlying issue(s).
+Then run prisma migrate dev to apply it and verify it works.
+
+Process Exit Code: 1 (FAILURE)
+
+--------------------------------------------------------------------------------
+6. TECHNICAL ANALYSIS & ARCHITECTURAL IMPLICATION
+--------------------------------------------------------------------------------
+Why This Fails:
+Relational database management systems (RDBMS) enforce domain integrity on writes.
+When a table contains 3 records and an ALTER TABLE operation introduces a NOT NULL
+constraint without a default expression, the database engine cannot determine what
+value to assign to existing rows. In raw PostgreSQL, this produces error:
+  "column "phoneNumber" contains null values (SQLState 23502)"
+Prisma's Schema Engine detects this hazard statically before issuing the ALTER TABLE,
+halting the migration to protect data integrity and prevent service downtime.
+
+Why This Distinguishes Engineers from Passive Agent Observers:
+An inexperienced engineer or autonomous agent attempting an automated schema migration
+against production would cause an immediate service crash or deployment lock.
+The correct production protocol is the canonical three-step migration (Evidence 05).
+================================================================================

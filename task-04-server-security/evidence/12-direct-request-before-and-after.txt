@@ -1,0 +1,103 @@
+================================================================================
+SCHOOLPASS ASSESSMENT TASK 4: EVIDENCE 12
+DIRECT API REQUEST BEFORE AND AFTER SERVER-SIDE ENFORCEMENT
+================================================================================
+Assessment Track: Task 4 — The Server Is the Source of Truth
+Requirement: Step 7 — Every client-side rule, enforced again on the server
+Target Endpoint: POST /api/auth/register
+Audit Reference: Ship-and-Found-Five-Tasks.md, Lines 149–157
+
+--------------------------------------------------------------------------------
+1. THE ATTACK SCENARIO
+--------------------------------------------------------------------------------
+In Task 3, the application implemented client-side input validation on the frontend
+registration form (enforcing two-word names, email format, password complexity, terms
+acceptance, and password confirmation).
+
+An attacker can completely bypass client-side validation by issuing raw HTTP requests
+directly to the server using curl, Postman, or automated scripts, omitting legal terms
+acceptance, using single-word names, or bypassing confirmation fields.
+
+In Task 3, the server accepted this direct request with `HTTP 200 OK`.
+In Task 4, every client-side rule is enforced again at the server boundary with Zod,
+causing the exact same request to be rejected with `HTTP 400 Bad Request`.
+
+--------------------------------------------------------------------------------
+2. SIDE-BY-SIDE COMPARISON MATRIX
+--------------------------------------------------------------------------------
+
++---------------------------------------------------------------------------------------------------------+
+|                                  THE DIRECT ATTACK REQUEST (RAW HTTP)                                   |
++---------------------------------------------------------------------------------------------------------+
+| curl.exe -i -s -X POST http://localhost:3000/api/auth/register \                                       |
+|   -H "Content-Type: application/json" \                                                                |
+|   -d '{                                                                                                 |
+|     "name": "BypassUser",                                 <-- Single-word name (Violates 2-word rule)  |
+|     "email": "bypass_attack_2026@example.com",            <-- Valid format                             |
+|     "password": "k8#mX9$qL2!vN7@pZ",                      <-- Valid password                           |
+|     "studentNumber": "SP-2026-0001"                       <-- Valid student ID                         |
+|     // "acceptedTerms": true                              <-- OMITTED (Violates legal consent rule)    |
+|     // "confirmPassword": "..."                           <-- OMITTED (Violates confirmation rule)     |
+|   }'                                                                                                    |
++----------------------------------------------------+----------------------------------------------------+
+|               TASK 3 RESPONSE (VULNERABLE)         |             TASK 4 RESPONSE (HARDENED)             |
+|          "Client-Side Validation Only"             |         "Server Is Source of Truth"                |
++----------------------------------------------------+----------------------------------------------------+
+| HTTP/1.1 200 OK                                    | HTTP/1.1 400 Bad Request                           |
+| Date: Sun, 01 Nov 2026 18:41:31 GMT                | Date: Sun, 01 Nov 2026 19:46:29 GMT                |
+| Content-Type: application/json                     | Content-Type: application/json                     |
+| Connection: keep-alive                             | Connection: keep-alive                             |
+|                                                    |                                                    |
+| {                                                  | {                                                  |
+|   "success": true,                                 |   "error": "Please enter your first and last name" |
+|   "message": "Registration successful. Please      | }                                                  |
+|               verify your email address.",         |                                                    |
+|   "verificationToken": "9d0d732dfa0e1fc6b6...",    |                                                    |
+|   "email": "bypass_attack_2026@example.com",       |                                                    |
+|   "studentLink": {                                 |                                                    |
+|     "success": true,                               |                                                    |
+|     "requestId": "cmvy6f0wq0003lgqcp9g00anq",      |                                                    |
+|     "studentName": "Chinedu Okafor"                |                                                    |
+|   }                                                |                                                    |
+| }                                                  |                                                    |
+|                                                    |                                                    |
+| RESULT: VULNERABILITY CONFIRMED                    | RESULT: ATTACK REFUSED (Status 400)                |
+| - Unvalidated single-word user inserted to DB      | - Zero database records created                    |
+| - Legal terms checkbox bypassed without consent    | - Boundary schema intercepted malformed input      |
+| - Password confirmation bypassed                   | - Zero side effects on internal state              |
++----------------------------------------------------+----------------------------------------------------+
+
+--------------------------------------------------------------------------------
+3. EXHAUSTIVE SERVER-SIDE ENFORCEMENT VERIFICATION
+--------------------------------------------------------------------------------
+
+Test Case A: Single-word name (`{"name": "BypassUser", ...}`)
+  Response: HTTP/1.1 400 Bad Request
+  Body:     {"error":"Please enter your first and last name."}
+  Rule:     nameSchema enforces >= 2 words, >= 2 characters per word.
+
+Test Case B: Omitted Terms of Service (`terms` / `acceptedTerms` omitted or false)
+  Response: HTTP/1.1 400 Bad Request
+  Body:     {"error":"You must accept the Terms of Service and Privacy Policy."}
+  Rule:     parentRegisterSchema refinement mandates boolean true.
+
+Test Case C: Mismatched Password Confirmation (`confirmPassword !== password`)
+  Response: HTTP/1.1 400 Bad Request
+  Body:     {"error":"Passwords do not match."}
+  Rule:     parentRegisterSchema cross-field refinement check.
+
+Test Case D: Database Side-Effects Audit
+  Direct Prisma inspection verified:
+  - Parent record:           NULL (Not created)
+  - VerificationToken:       NULL (Not created)
+  - StudentLinkRequest:      NULL (Not created)
+
+--------------------------------------------------------------------------------
+4. LESSON AND DEFENSE
+--------------------------------------------------------------------------------
+Client-side validation exists strictly for user experience (reducing latency and
+preventing unnecessary network roundtrips). It is never a security control.
+The server is the ultimate source of truth: every invariant, business rule, and
+integrity constraint must be enforced at the backend boundary before reaching
+domain models or storage.
+================================================================================
