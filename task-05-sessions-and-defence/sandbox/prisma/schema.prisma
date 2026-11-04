@@ -1,0 +1,93 @@
+// Task 5 Isolated SQLite Sandbox Schema (Sessions, RBAC & Account Deletion Lifecycle)
+datasource db {
+  provider = "sqlite"
+  url      = "file:./sandbox.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../client"
+}
+
+model Parent {
+  id                  String        @id @default(cuid())
+  name                String
+  email               String        @unique
+  passwordHash        String
+  emailVerifiedAt     DateTime?
+  isLocked            Boolean       @default(false)      // Step 6 Req 1: Immediate lock on deletion request
+  scheduledDeletionAt DateTime?                          // Step 6: 7-day grace period timestamp
+  anonymizedAt        DateTime?                          // Step 6 Req 2: Identity anonymisation timestamp
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  sessions            Session[]
+  payments            Payment[]
+  arrivalCodes        ArrivalCode[]
+
+  @@map("parents")
+}
+
+model StaffUser {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  role         String    @default("STAFF") // "STAFF" | "ADMIN"
+  isFrontDesk  Boolean   @default(false)
+  passwordHash String
+  createdAt    DateTime  @default(now())
+
+  @@map("staff_users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  role      String   // "parent" | "staff" | "admin"
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  parent    Parent?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  parentId    String
+  amount      Int      // In Kobo (e.g. 15000000 = 150,000 NGN)
+  reference   String   @unique
+  status      String   @default("PAID")
+  createdAt   DateTime @default(now())
+
+  // Critical Relational Protection: Restrict deletion to preserve 6-year CAMA financial ledger
+  parent      Parent   @relation(fields: [parentId], references: [id], onDelete: Restrict)
+
+  @@index([parentId])
+  @@map("payments")
+}
+
+model ArrivalCode {
+  id        String   @id @default(cuid())
+  parentId  String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  parent    Parent   @relation(fields: [parentId], references: [id], onDelete: Cascade)
+
+  @@index([parentId])
+  @@map("arrival_codes")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  event     String
+  actorType String
+  actorId   String?
+  details   String
+  timestamp DateTime @default(now())
+
+  @@map("audit_logs")
+}

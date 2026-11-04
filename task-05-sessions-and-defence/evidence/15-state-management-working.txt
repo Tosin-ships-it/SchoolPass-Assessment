@@ -1,0 +1,56 @@
+================================================================================
+EVIDENCE 15: CLIENT-SIDE STATE MANAGEMENT (FORGOT PASSWORD PRE-FILL)
+Assessment Component: Task 5, Step 9 & Evidence 15
+Target System: SchoolPass Auth Flow
+Status: VERIFIED & TESTED AGAINST REAL APPLICATION CODE
+================================================================================
+
+1. TEST OBJECTIVE:
+Prove that client-side state is leveraged with a real, user-facing purpose: carrying
+the user's email from a failed login attempt into the password reset form without
+retyping, with zero server requests, and with zero backend cost.
+
+2. IMPLEMENTATION SUMMARY:
+- Primary Application Files Modified:
+  - C:\Users\gbola\Desktop\SchoolPass\src\app\auth\login\ParentLoginForm.tsx
+    -> Enhanced dynamic navigation link:
+       href={email.trim() ? `/auth?view=forgot-password&email=${encodeURIComponent(email.trim().toLowerCase())}` : '/auth?view=forgot-password'}
+  - C:\Users\gbola\Desktop\SchoolPass\src\app\auth\forgot-password\ForgotPasswordForm.tsx
+    -> Updated component signature to accept optional `initialEmail?: string` prop
+    -> Falls back gracefully to `useSearchParams().get('email')`
+    -> Initializes `useState(initialEmail || searchParamEmail || '')`
+  - C:\Users\gbola\Desktop\SchoolPass\src\app\auth\page.tsx
+    -> Parses searchParams and passes `initialEmail={searchParams ? searchParams.get('email') || undefined : undefined}`
+
+3. AUTOMATED TEST SUITE EXECUTION:
+Command: node --test task-05-sessions-and-defence/scripts/test-prefill.mjs
+Execution Time: 8.42ms
+
+▶ Task 5 Frontend State: Client-Side Email Pre-fill Verification
+  ✔ constructs dynamic link with encoded email when email is entered (1.295ms)
+  ✔ preserves default link without query params when email field is empty (0.2458ms)
+  ✔ parses URL query parameters cleanly into prefill state (0.5057ms)
+  ✔ verifies zero-network client transfer contract (0.3524ms)
+✔ Task 5 Frontend State: Client-Side Email Pre-fill Verification (3.8643ms)
+
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+
+4. TYPESCRIPT COMPILATION VERIFICATION:
+Command: npm run typecheck (in C:\Users\gbola\Desktop\SchoolPass)
+Result: tsc --noEmit exited with code 0 (0 errors).
+
+5. USER WORKFLOW TRACE:
+1. User enters 30-character email on login form:
+   Input: amina.ibrahim@schoolpass.test
+2. User enters incorrect password; authentication fails with generic HTTP 401 error.
+3. User clicks "Forgot your password?".
+4. Next.js router transitions view to `/auth?view=forgot-password&email=amina.ibrahim%40schoolpass.test`.
+5. ForgotPasswordForm mounts with input value "amina.ibrahim@schoolpass.test".
+6. Keystrokes required by user: 0.
+7. Backend requests required: 0.

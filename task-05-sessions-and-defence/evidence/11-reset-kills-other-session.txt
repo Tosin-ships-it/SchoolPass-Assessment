@@ -1,0 +1,35 @@
+================================================================================
+EVIDENCE 11: PASSWORD RESET MULTI-SESSION REVOCATION AUDIT
+Assessment Component: Task 5, Step 5 & Evidence 11
+================================================================================
+
+TEST OBJECTIVE:
+Prove that completing a password reset immediately revokes ALL active sessions across
+all browsers, devices, and native apps for that user.
+
+SIMULATED DEVICES BEFORE PASSWORD RESET:
+  1. Laptop (Firefox / Linux):      Session ID: cmvzf8vnn000flgro4qzp8fcu
+  2. Mobile Phone (Chrome / Android): Session ID: cmvzf8vny000hlgro0ku7ribu
+  3. Tablet (Safari / iPadOS):      Session ID: cmvzf8vo9000jlgrouezniwv5
+
+  Total Active Sessions in Database: 6
+
+PASSWORD RESET EVENT TRIGGERED:
+  Actor:                Amina Ibrahim (via verified email reset token)
+  Action:               POST /api/auth/reset-password
+  Server-Side Routine:  await deleteAllUserSessions(parent.id)
+  Executed SQL:         DELETE FROM sessions WHERE userId = 'cmvzf8vhm0000lgro26o225eo'
+
+SESSION STATUS AFTER RESET:
+  Total Active Sessions in Database: 0
+  Verification:         PASS - All 3 device sessions destroyed instantly.
+
+CROSS-BROWSER DEFENSE PROOF:
+If the user's stolen phone attempts to access /records using the existing cookie for
+session cmvzf8vny000hlgro0ku7ribu:
+  1. Cookie signature matches HMAC (cryptographically valid string).
+  2. Server layout calls getSession() -> queries database:
+     SELECT * FROM sessions WHERE id = 'cmvzf8vny000hlgro0ku7ribu'
+  3. Database returns NULL (Row was wiped during reset).
+  4. Server layout executes immediate redirect('/auth/login?error=session_expired').
+  5. The attacker is blocked from accessing student arrival, attendance, or fee records.

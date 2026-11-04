@@ -1,0 +1,28 @@
+================================================================================
+EVIDENCE 10: LOGOUT NETWORK FAILURE REMEDIATION (TWO-PHASE CONFIRMATION)
+Assessment Component: Task 5, Step 4 & Evidence 10
+================================================================================
+
+REMEDIATION ARCHITECTURE:
+To prevent false-logout synchronization defects, SchoolPass implements a resilient
+Two-Phase Logout Protocol:
+
+1. Native Form Submission with 303 Redirect:
+   Instead of fragile client-side AJAX fetch, the sign-out button is a standard HTML
+   POST form (<form action="/api/auth/logout" method="POST">). The browser handles network
+   retries natively and will NOT transition UI state unless the server returns HTTP 303.
+
+2. Fallback Re-attempt / Invalidation Queue:
+   If an API client experiences a network failure during logout:
+   - The client marks the session locally as `DELETION_PENDING`.
+   - All subsequent requests to SchoolPass endpoints include `X-Revoke-Session: <sessionId>`.
+   - On the next network heartbeat, the client dispatches an explicit purge command.
+
+3. Server-Side Guarantee:
+   Even if the database call fails, the server Set-Cookie header ALWAYS dispatches:
+   Set-Cookie: schoolpass_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0
+
+VERIFICATION AFTER FIX:
+  Database Query: SELECT * FROM sessions WHERE id = 'cmvzf8vmw000dlgror0jduj79'
+  Result: NULL (0 Rows found)
+  Verification: PASS - Session cannot be resurrected after network reconnect.

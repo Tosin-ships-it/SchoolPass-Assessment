@@ -1,0 +1,46 @@
+================================================================================
+EVIDENCE 14: SCHEDULED JOB RUN 2 (IDEMPOTENCY PROOF - ZERO CHANGES)
+Assessment Component: Task 5, Step 6 & Evidence 14
+Target System: SchoolPass (Production Background Purge Engine)
+Status: IMPLEMENTED IN APPLICATION CODE | TESTED LOCALLY | AWAITING NEON MIGRATION APPROVAL
+================================================================================
+
+1. REQUIREMENT:
+Prove the scheduled job works and prove it is safe to run twice. Run it twice against the same data
+and capture that the second run changes nothing.
+"A job that stopped running looks exactly like a job with nothing to do, and the counts are what tell them apart."
+
+2. REAL APPLICATION IMPLEMENTATION:
+- Purge Engine Script:     C:\Users\gbola\Desktop\SchoolPass\scripts\run-deletion-purge.mjs
+- Selection Logic:         findExpiredDeletionCandidates(now) checks (scheduledDeletionAt <= now AND anonymizedAt IS NULL).
+                           Because candidates purged in Run 1 have anonymizedAt != null, they are excluded.
+- Single Transaction:      Atomic prisma.$transaction prevents partial updates or inconsistent states.
+
+3. EXECUTION LOG OUTPUT (RUN 2 - IMMEDIATE RERUN AGAINST SAME DATABASE STATE):
+[PURGE CRON] START: 2026-11-02T19:34:52.125Z
+[PURGE CRON] Candidates found: 0
+[PURGE CRON] FINISH: 2026-11-02T19:34:52.126Z | Processed: 0 | Failed: 0 | Duration: 1ms
+
+4. IDEMPOTENCY COMPARISON:
+-------------------------------------------------------------------------------
+Metric                       Run 1 (Initial Purge)    Run 2 (Immediate Rerun)
+-------------------------------------------------------------------------------
+Candidates Found             1                        0
+Anonymised Parents           1                        0 (Zero modified)
+Detached Student Links       1                        0 (Zero modified)
+Preserved Payments           2                        0 (Zero modified)
+Failed Purges                0                        0
+Execution Status             SUCCESS                  SUCCESS
+Duration                     7ms                      1ms
+-------------------------------------------------------------------------------
+
+5. IDEMPOTENCY VERIFICATION:
+  Pass Condition: Run 2 executed against the same database state modifies exactly 0 records.
+  Result:         PASS - 100% IDEMPOTENT. Safe to trigger repeatedly via Vercel Cron or GitHub Actions daily.
+
+6. VERIFICATION STATUS:
+- Implemented in Real Codebase:  YES (scripts/run-deletion-purge.mjs, src/lib/auth/store.ts)
+- Tested Locally:               YES (11/11 tests pass in test-deletion-lifecycle.mjs)
+- Typecheck Status:             YES (npm run typecheck: 0 errors)
+- Awaiting Migration Approval:   YES (Local migration prepared; awaiting user approval before applying to Neon)
+- Browser / Production E2E:     Pending migration approval.

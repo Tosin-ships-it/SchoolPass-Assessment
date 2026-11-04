@@ -1,0 +1,54 @@
+================================================================================
+EVIDENCE 12: DELETION REQUEST IMMEDIATELY LOCKS ACCOUNT & REVOKES SESSIONS
+Assessment Component: Task 5, Step 6 (Requirement 1) & Evidence 12
+Target System: SchoolPass (Production Application & Auth Core)
+Status: IMPLEMENTED IN APPLICATION CODE | TESTED LOCALLY | AWAITING NEON MIGRATION APPROVAL
+================================================================================
+
+1. REQUIREMENT UNDER TEST:
+Prove that when an authenticated user requests account deletion:
+1. The request requires re-entering the account password for authorization.
+2. The account is marked isLocked = true immediately in the data store.
+3. The 7-day grace period timestamp (scheduledDeletionAt = now() + 7 days) and deletionRequestedAt are stamped.
+4. All active sessions are revoked immediately (deleteAllUserSessions) and the session cookie is cleared.
+5. Multi-tier lockout enforcement: getSession() verifies parent.isLocked and rejects the session immediately with null.
+6. Login attempts during the grace period are refused with error "ACCOUNT_SCHEDULED_FOR_DELETION" with canCancel: true.
+
+2. REAL APPLICATION IMPLEMENTATION:
+- Authenticated Route:     C:\Users\gbola\Desktop\SchoolPass\src\app\api\auth\delete-account\route.ts
+- Auth Business Logic:     C:\Users\gbola\Desktop\SchoolPass\src\lib\auth\index.ts (requestAccountDeletion)
+- Data Store Transition:   C:\Users\gbola\Desktop\SchoolPass\src\lib\auth\store.ts (requestParentAccountDeletion)
+- Multi-Tier Lockout:      C:\Users\gbola\Desktop\SchoolPass\src\lib\auth\index.ts (getSession, loginParent)
+- Cancellation Route:      C:\Users\gbola\Desktop\SchoolPass\src\app\api\auth\cancel-deletion\route.ts
+
+3. EXECUTION TRACE & LIFECYCLE TRANSITION (test-deletion-lifecycle.mjs):
+[USER] Parent ID:             cmvzfb9wb0001lgy06nmh8bx3
+[USER] Parent Email:          zainab.usman@schoolpass.test
+[USER] Initial State:         ACTIVE (isLocked: false, scheduledDeletionAt: null)
+[ACTION] POST /api/auth/delete-account (with password verification)
+[STORE UPDATE]
+  isLocked:                   true
+  deletionRequestedAt:        2026-11-02T19:34:52.000Z
+  scheduledDeletionAt:        2026-11-09T19:34:52.000Z (Exactly 7 days per DELETION_GRACE_PERIOD_DAYS)
+[SESSION REVOCATION]
+  deleteAllUserSessions:      Executed for userId = cmvzfb9wb0001lgy06nmh8bx3
+  clearSessionCookie:         Executed (Max-Age=0, expired)
+  Active Sessions in DB:      0
+
+4. MULTI-TIER SECURITY ENFORCEMENT ON SUBSEQUENT REQUESTS:
+A. Direct Cookie Presentation to Protected Layouts:
+   - getSession() reads session record and fetches parent:
+     if (parent.isLocked) { return null; }
+   - Server Layout (e.g., (parent)/layout.tsx) detects null session -> redirects to /auth.
+   - Result: IMMEDIATE LOCKOUT ENFORCED.
+B. Subsequent Login Attempt During Grace Period:
+   - loginParent(email, password) detects parent.isLocked === true and scheduledDeletionAt > now().
+   - Refusal Payload: { ok: false, error: 'ACCOUNT_SCHEDULED_FOR_DELETION', canCancel: true, scheduledDeletionAt }
+   - Result: PASS - Member notified of scheduled deletion with cancellation link.
+
+5. VERIFICATION STATUS:
+- Implemented in Real Codebase:  YES (src/lib/auth/store.ts, src/lib/auth/index.ts, src/app/api/auth/delete-account)
+- Tested Locally:               YES (11/11 tests pass in test-deletion-lifecycle.mjs)
+- Typecheck Status:             YES (npm run typecheck: 0 errors)
+- Awaiting Migration Approval:   YES (Local migration 20261102_account_deletion_lifecycle_and_restrict_payments prepared; not yet applied to Neon PostgreSQL)
+- Browser / Production E2E:     Pending live migration execution and browser UI test.

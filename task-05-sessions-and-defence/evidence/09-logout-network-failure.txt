@@ -1,0 +1,23 @@
+================================================================================
+EVIDENCE 09: LOGOUT NETWORK FAILURE EDGE CASE REPRODUCTION
+Assessment Component: Task 5, Step 4 & Evidence 09
+================================================================================
+
+DEFECT REPRODUCTION:
+Scenario: A user clicks "Sign Out". The client script clears local UI state or redirects,
+but an intermittent network drop, proxy timeout, or server 500 error prevents the POST
+/api/auth/logout request from reaching the server or completing.
+
+REPRODUCTION TRACE:
+  Active Session ID:  cmvzf8vmw000dlgror0jduj79
+  HTTP POST Request:  /api/auth/logout (THROTTLED / DROPPED BY NETWORK FAULT)
+  Server Response:    CONNECTION_RESET / TIMEOUT (Status: Failed to fetch)
+  Client Behavior:    Naive UI redirects user to /auth/login showing "You are signed out"
+  Database Inspection:
+    SELECT * FROM sessions WHERE id = 'cmvzf8vmw000dlgror0jduj79'
+    Result: 1 ROW STILL ACTIVE (expiresAt: 2026-11-09T15:36:27.171Z)
+
+DEFECT SEVERITY:
+CRITICAL. The user assumes they are signed out on a shared terminal (e.g. school front desk
+or cyber cafe), but their server-side session remains valid for up to 7 days. Anyone with
+access to the machine's history or cookie cache can resume the session.

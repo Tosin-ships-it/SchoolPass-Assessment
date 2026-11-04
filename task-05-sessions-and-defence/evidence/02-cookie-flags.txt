@@ -1,0 +1,41 @@
+================================================================================
+EVIDENCE 02: SESSION COOKIE SECURITY ATTRIBUTES AUDIT
+Assessment Component: Task 5, Step 2 & Evidence 02
+================================================================================
+
+Cookie Configuration Specification:
+  Cookie Name:      schoolpass_session
+  Payload Schema:   <cuid>.<hmac-sha256>
+  Path:             /
+  Max-Age:          604800 seconds (7 Days)
+  Expires (UTC):    Mon, 09 Nov 2026 15:36:27 GMT
+
+FLAGS & PROTECTION MATRIX:
+
+1. HttpOnly = true
+   What it protects against:
+   Blocks client-side scripts (e.g. document.cookie) from accessing the session token.
+   Mitigates session hijacking via Cross-Site Scripting (XSS).
+   What it fails to protect against:
+   Does not prevent Cross-Site Request Forgery (CSRF) or direct network interception if TLS is compromised.
+
+2. Secure = true (Enforced in Production)
+   What it protects against:
+   Ensures the browser only transmits the cookie over encrypted HTTPS channels.
+   Prevents plaintext session leakage over insecure Wi-Fi / man-in-the-middle (MITM) sniffing.
+   What it fails to protect against:
+   Does not protect against attacks originating on the client machine itself (malware, browser extensions).
+
+3. SameSite = Lax
+   What it protects against:
+   Restricts the cookie from being sent on cross-site requests (e.g. image loads, unauthorized cross-origin POSTs).
+   Provides robust baseline defense against Cross-Site Request Forgery (CSRF) attacks.
+   What it fails to protect against:
+   Permits cookie transmission on top-level GET navigations (e.g. clicking a link to SchoolPass from an external site).
+
+4. Max-Age = 604800 (7 Days)
+   What it protects against:
+   Establishes an explicit client-side session lifetime matching the server-side `expiresAt` timestamp.
+   Prevents perpetual browser persistence after the user has ceased using the platform.
+   What it fails to protect against:
+   Does not automatically detect inactivity within the 7-day window unless active sliding expiration is configured.

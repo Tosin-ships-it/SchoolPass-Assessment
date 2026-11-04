@@ -1,0 +1,48 @@
+================================================================================
+EVIDENCE 16: ADMINISTRATIVE PROTECTED ROUTE REFUSAL (COPIED-LINK TEST)
+Assessment Component: Task 5, Step 10 & Evidence 16
+Target System: SchoolPass (Multi-Tier RBAC & Authorization Boundary)
+================================================================================
+
+TEST OBJECTIVE:
+Prove that an authenticated ordinary user (Parent) who copies and pastes a protected
+administrative URL (/staff-accounts) is strictly refused access. Proves that routes
+check authorization (role permissions in database), not merely authentication (cookie presence).
+
+ACTORS IN SYSTEM:
+  Ordinary User:      Ordinary Parent (Role: parent, ID: cmvzf9zqn0000lg945mqbbfw9)
+  Administrative User: Proprietor Admin (Role: ADMIN, ID: cmvzf9zr50001lg94ngmmeywg)
+
+COPIED-LINK ATTACK SIMULATION:
+  1. Parent authenticates legitimately to parent portal.
+  2. Parent obtains valid signed cookie: cmvzf9zri0003lg949wg1jf2...
+  3. Parent pastes protected Administrative URL into browser:
+     Target URL: https://schoolpass.internal/staff-accounts
+
+THREE-TIER AUTHORIZATION EVALUATION:
+
+Tier 1: Edge Middleware Routing Gate (src/middleware.ts)
+  Cookie Present:     YES (schoolpass_session is populated and valid HMAC)
+  Edge Middleware:    Forwards request downstream to server component layout.
+  Note:               Middleware is NOT the sole authorization boundary.
+
+Tier 2: Server Component Layout Authorization (src/app/(staff)/layout.tsx)
+  Database Lookup:    SELECT * FROM sessions WHERE id = 'cmvzf9zri0003lg949wg1jf23'
+  Session Role:       "parent"
+  Required Role:      "staff" | "admin"
+  Evaluation:         FAILED (session.role !== 'staff' && session.role !== 'admin')
+  Server Enforcement: redirect('/auth/staff-login?error=insufficient_permissions')
+  Status:             HTTP 303 See Other -> Redirect to Staff Login
+  Administrative View Rendered: FALSE (0 KB of admin markup returned)
+
+Tier 3: Server Action Mutation Protection (createStaffAccountAction)
+  Action Attempt:     Parent submits forged POST to /api/staff-accounts
+  Server-Side Check:  assertAdminSession() verifies DB role === 'ADMIN'
+  Evaluation:         THROWS UnauthorizedException("Administrative role required.")
+  Status:             HTTP 403 Forbidden
+
+VERIFICATION ASSERTIONS:
+  1. Copied link renders administrative page: NO (Completely blocked)
+  2. Ordinary user elevated to staff:        NO (Role separation enforced in DB)
+  3. Authoritative boundary relies on Edge:   NO (Enforced in Node.js Server Component Layout)
+  4. Result:                                 PASS - AUTHORISATION VERIFIED

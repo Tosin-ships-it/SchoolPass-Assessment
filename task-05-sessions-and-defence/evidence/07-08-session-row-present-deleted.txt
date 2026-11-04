@@ -1,0 +1,29 @@
+================================================================================
+EVIDENCE 07 & 08: SERVER-SIDE LOGOUT DATABASE ROW LIFECYCLE
+Assessment Component: Task 5, Step 4 & Evidence 07 / 08
+================================================================================
+
+LOGOUT ARCHITECTURAL PRINCIPLE:
+Front-end only logout is insecure: clearing client cookies while leaving active rows
+in the database leaves sessions vulnerable to replay attacks. SchoolPass strictly deletes
+the database session record on the server and clears the cookie headers simultaneously.
+
+STAGE 1: Session Present (Evidence 07)
+  Session ID:      cmvzf8vm3000blgrojeet0mhn
+  User ID:         cmvzf8vhm0000lgro26o225eo
+  Database Query:  SELECT * FROM sessions WHERE id = 'cmvzf8vm3000blgrojeet0mhn'
+  Result:          FOUND 1 ROW
+    - ID:          cmvzf8vm3000blgrojeet0mhn
+    - Role:        parent
+    - Expires At:  2026-11-09T15:36:27.141Z
+    - Created At:  2026-11-02T15:36:27.148Z
+
+STAGE 2: Server-Side Logout Executed
+  Action:          POST /api/auth/logout
+  Server Op:       DELETE FROM sessions WHERE id = 'cmvzf8vm3000blgrojeet0mhn'
+  Cookie Op:       Set-Cookie: schoolpass_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax
+
+STAGE 3: Session Deleted (Evidence 08)
+  Database Query:  SELECT * FROM sessions WHERE id = 'cmvzf8vm3000blgrojeet0mhn'
+  Result:          NULL (0 Rows found)
+  Verification:    PASS - Session record permanently removed from database

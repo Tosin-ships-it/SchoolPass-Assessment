@@ -1,0 +1,26 @@
+================================================================================
+EVIDENCE 05: GENERIC AUTHENTICATION ERROR PARITY
+Assessment Component: Task 5, Step 3 & Evidence 05
+================================================================================
+
+TEST OBJECTIVE:
+Prove that failed authentication attempts for a non-existent account and an existing
+account with an invalid password return the exact same HTTP status code (401) and
+identical error message. Prevents account enumeration attacks.
+
+CASE A: Non-Existent Account
+  Email Provided:     nonexistent.guardian.999@schoolpass.test
+  HTTP Status:        401 Unauthorized
+  Response Payload:   {"error": "Invalid email or password."}
+  Timing Equalized:   Yes (Dummy Argon2id verification executed to prevent timing side-channel)
+
+CASE B: Existing Account with Incorrect Password
+  Email Provided:     amina.ibrahim@schoolpass.test (Exists in database)
+  HTTP Status:        401 Unauthorized
+  Response Payload:   {"error": "Invalid email or password."}
+  Timing Equalized:   Yes (Real Argon2id verification executed)
+
+VERIFICATION RESULT:
+  Status Code Parity:  IDENTICAL (401 === 401)
+  Error String Parity: IDENTICAL ("Invalid email or password.")
+  Account Enumeration: COMPLETELY MITIGATED

@@ -1,0 +1,53 @@
+================================================================================
+EVIDENCE 04: HARD GATING REGISTRATION FLOW VERIFICATION (SHIPPED IMPLEMENTATION)
+Assessment Component: Task 5, Step 2 & Evidence 04
+Target System: SchoolPass (Production Gating Architecture)
+================================================================================
+
+FLOW OVERVIEW:
+In the shipped hard gating model, registration stops immediately after user creation.
+Zero session cookies are issued. The user must check their email, enter the 6-digit
+verification code, and manually log in before accessing any protected portal routes.
+
+WORKFLOW TRACE:
+
+Step 1: User Submits Registration Form
+  Endpoint:          POST /api/auth/register
+  Payload:           {"name": "Babatunde Lawal", "email": "babatunde.lawal@schoolpass.test", "password": "SecurePassword123!"}
+  Database Action:   INSERT INTO parents (name, email, passwordHash, emailVerifiedAt)
+                     VALUES ('Babatunde Lawal', 'babatunde.lawal@schoolpass.test', '$argon2id$...', NULL)
+
+Step 2: Hard Gate Enforced (Zero Session Cookie)
+  Cookie Dispatched: NONE (schoolpass_session cookie is NOT set)
+  Redirect Target:   /auth?view=verify-email&email=babatunde.lawal%40schoolpass.test
+  Status:            HTTP 303 See Other
+  Background Job:    triggerVerificationEmail(...) enqueued to SMTP transporter
+
+Step 3: Direct Access Attempt to Protected Route (/records)
+  Request:           GET /records
+  Cookie Header:     [EMPTY]
+  Edge Middleware:   isParentRoute === true && !sessionCookie
+  Enforcement:       HTTP 307 Temporary Redirect -> /auth?view=login&returnUrl=/records
+  Evaluation:        PASS - Complete refusal of unauthenticated access.
+
+Step 4: Email Code Verification
+  Parent Inputs:     6-digit verification code "583921"
+  Endpoint:          POST /api/auth/verify-email
+  Database Query:    SELECT * FROM verification_tokens WHERE tokenHash = sha256("583921")
+  Evaluation:        Token matches, expiresAt > now()
+  Database Action:   UPDATE parents SET emailVerifiedAt = now() WHERE id = '...';
+                     DELETE FROM verification_tokens WHERE id = '...';
+  Status:            HTTP 200 OK {"success": true, "message": "Email verified successfully."}
+
+Step 5: Manual Login Required
+  Endpoint:          POST /api/auth/login
+  Payload:           {"email": "babatunde.lawal@schoolpass.test", "password": "SecurePassword123!"}
+  Server Action:     Parent verified (emailVerifiedAt != null) -> createSessionRecord(...)
+  Set-Cookie:        schoolpass_session=cm42...; HttpOnly; SameSite=Lax; Path=/; Max-Age=604800
+  Portal Entrance:   Redirect to /records (Access granted with full guardian rights)
+
+SECURITY EVALUATION:
+Hard gating eliminates unverified account abuse, blocks student number harvesting,
+and guarantees that every parent interacting with student arrival records has a
+verified, contactable email address.
+================================================================================

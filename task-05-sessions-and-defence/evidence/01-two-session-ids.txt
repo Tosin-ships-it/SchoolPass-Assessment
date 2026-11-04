@@ -1,0 +1,45 @@
+================================================================================
+EVIDENCE 01: DISTINCT SESSION IDENTIFIERS ACROSS SUCCESSIVE LOGINS
+Assessment Component: Task 5, Step 1 & Evidence 01
+Target System: SchoolPass (Identity & Session Management)
+Date: 2026-11-02T15:36:27.096Z
+================================================================================
+
+TEST OBJECTIVE:
+Prove that successive logins by the same user produce fresh, distinct session
+identifiers in the database and in browser cookies. Prevents session fixation
+attacks where an attacker attempts to pre-set or reuse a known session identifier.
+
+USER CONTEXT:
+  User ID:       cmvzf8vhm0000lgro26o225eo
+  Email:         amina.ibrahim@schoolpass.test
+  User Name:     Amina Ibrahim
+  Role:          parent
+
+SUCCESSIVE LOGIN ATTEMPTS:
+
+[LOGIN 1]
+  Timestamp:     2026-11-02T15:36:27.026Z
+  Session ID:    cmvzf8viq0003lgrooeb6mp5z
+  Expires At:    2026-11-09T15:36:27.019Z
+  Signed Cookie: cmvzf8viq0003lgrooeb6mp5z.fac631a6e629ccabd1944d16d7776a636c98960f1779ef7a0d26b61775809999
+  HMAC Signature: fac631a6e629ccabd1944d16d7776a636c98960f1779ef7a0d26b61775809999
+
+[LOGIN 2]
+  Timestamp:     2026-11-02T15:36:27.092Z
+  Session ID:    cmvzf8vkj0005lgrolnlhw19c
+  Expires At:    2026-11-09T15:36:27.085Z
+  Signed Cookie: cmvzf8vkj0005lgrolnlhw19c.f6890d477eba8da26a052a3d312a322538ea13e491b610bcca6a9ffefbef5b19
+  HMAC Signature: f6890d477eba8da26a052a3d312a322538ea13e491b610bcca6a9ffefbef5b19
+
+VERIFICATION ASSERTIONS:
+  1. Session IDs are distinct:       PASS (Distinct CUIDs generated)
+  2. Signed cookies are distinct:   PASS (Distinct cryptographic payloads)
+  3. Session 1 verified from token: PASS
+  4. Session 2 verified from token: PASS
+
+SECURITY EVALUATION:
+SchoolPass enforces server-side session regeneration on every successful login.
+Because each login creates a fresh CUID in the `sessions` table and signs it with
+HMAC-SHA256, an attacker cannot fix a session prior to authentication. Any previous
+unauthenticated token is completely superseded.
